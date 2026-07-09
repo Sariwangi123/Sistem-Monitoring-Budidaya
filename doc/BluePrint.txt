@@ -1,0 +1,348 @@
+00_Project_Master.md                  ✅
+00_Development_Convention.md          ✅
+00_Business_Rules.md                  ✅
+00_Database_Convention.md             ✅
+00_API_Convention.md                  ✅
+00_UI_Convention.md                   ✅
+00_Coding_Convention.md               ✅
+00_Project_Structure.md               ✅
+
+01_Milestone_Foundation.md            ✅
+
+02_Master_Data/
+    02_Master_Data_Part_1.md ✅
+    02_Master_Data_Part_2.md ✅
+    02_Master_Data_Part_3.md ✅
+    02_Master_Data_Part_4.md ✅
+    02_Master_Data_Part_5.md ✅
+
+03_Culture_Cycle/
+    03_Culture_Cycle_Part_1.md ✅
+    Overview & Business Process
+
+    03_Culture_Cycle_Part_2.md ✅
+    Database Design
+
+    03_Culture_Cycle_Part_3.md ✅
+    REST API Specification
+
+    03_Culture_Cycle_Part_4.md ✅
+    Frontend & UI Specification
+
+    03_Culture_Cycle_Part_5.md ✅
+    Implementation Rules
+
+04_Activities/
+    04_Activities_Part_1.md ✅
+    Overview & Business Process
+
+    04_Activities_Part_2.md ✅
+    Database Design
+
+    04_Activities_Part_3.md ✅
+    REST API Specification
+
+    04_Activities_Part_4.md ✅
+    Frontend & UI Specification
+
+    04_Activities_Part_5.md ✅
+    Impementation Rules & Business Engine
+
+    04_Activities_Part_6.md ✅
+    Notification & Automation Engine
+
+    04_Activities_Part_7.md ✅
+    Operational Intelligent & Analitics
+
+05_Warehouse/
+    05_Warehouse_Part_1.md ✅
+    Overview & Business Process
+
+    05_Warehouse_Part_2.md ✅
+    Database Design
+
+    05_Warehouse_Part_3.md ✅
+    Rest API Specification
+
+    05_Warehouse_Part_4.md ✅
+    Frontend & UI Specification
+
+    05_Warehouse_Part_5.md ✅
+    Implementation Rules & Business Engine
+
+    05_Warehouse_Part_6.md ✅
+    Inventory Intelligence & Analitics
+
+06_Harvest/
+    06_Harvest_Part_1.md ✅
+    Overview & Bussiness Process
+
+    06_Harvest_Part_2.md ✅
+    Database Design
+
+    06_Harvest_Part_3.md ✅
+    REST API Specification
+
+    06_Harvest_Part_4.md ✅
+    Frontend & UI Specification
+
+    06_Harvest_Part_5.md ✅
+    Impementation Rules & Bussiness Engine
+
+    06_Harvest_Part_6.md ✅
+    Harvest Intelligence & Analitics
+
+07_Finance/
+    07_Finance_Part_1.md ✅
+    Overview & Business Process
+
+    07_Finance_Part_2.md ✅
+    Database Design
+
+    07_Finance_Part_3.md ✅
+    REST API Specification
+
+    07_Finance_Part_4.md ✅
+    Frontend & UI Specification
+
+    07_Finance_Part_5.md ✅
+    Implementation Rules & Business Engine 
+
+    07_Finance_Part_6.md ✅
+    Financial Intelligence & Analytics 
+
+    07_Finance_Part_7.md ✅
+    Costing, Profitability & Financial Reporting
+
+08_Dashboard/
+    08_Dashboard_Part_1.md ✅
+    Overview & Business Process
+
+    08_Dashboard_Part_2.md ✅
+    Dashboard Architecture & Widget Design
+
+    08_Dashboard_Part_3.md ✅
+    REST API Specification
+
+    08_Dashboard_Part_4.md ✅
+    Frontend & UI Workspace
+
+    08_Dashboard_Part_5.md ✅
+    Dashboard Engine & Business Rules
+
+    08_Dashboard_Part_6.md ✅
+    Operational Intelligence & Decision Support
+
+09_Report_Analytics/
+    09_Report_Analytics_Part_1.md ✅
+    Overview & Business Process
+
+    09_Report_Analytics_Part_2.md ✅
+    Report Architecture & Template Engine
+
+    09_Report_Analytics_Part_3.md ✅
+    REST API Specification
+
+    09_Report_Analytics_Part_4.md ✅
+    Frontend & Report Workspace
+
+    09_Report_Analytics_Part_5.md ✅
+    Report Engine & Business Rules
+
+    09_Report_Analytics_Part_6.md ✅
+    Business Intelligence & Executive Analytics
+
+10_Notification/
+    10_Notification_Part_1.md ✅
+    Overview & Bussiness Process
+
+    10_Notification_Part_2.md ✅
+    Notification Architecture & event Engine
+
+    10_Notification_Part_3.md ✅
+    REST API Specification
+
+    10_Notification_Part_4.md ✅
+    Frontend & Notification Center
+
+    10_Notification_Part_5.md ✅
+    Notification Engine & Bussiness Rules
+
+11_System_Administration/
+    11_System_Administration_Part_1.md ✅
+    Overview & Business Process
+
+    11_System_Administration_Part_2.md ✅
+    Administration Architecture & Administration Engine
+
+    11_System_Administration_Part_3.md ✅
+    REST API Specification
+
+    11_System_Administration_Part_4.md ✅
+    Frontend & Administration Workspace
+
+    11_System_Administration_Part_5.md ✅
+    Administration Engine & Business Rules
+
+    11_System_Administration_Part_6.md ✅
+    Configuration, Monitoring & Audit
+
+    11_System_Administration_Part_7.md ✅
+    Security, Backup & Disaster Recovery
+
+12_AI_Recommendation/
+    12_AI_Recommendation_Part_1.md ✅
+    Overview & AI Philosophy
+
+    12_AI_Recommendation_Part_2.md ✅
+    AI Architecture
+
+    12_AI_Recommendation_Part_3.md ✅
+    AI Knowledge Engine
+
+    12_AI_Recommendation_Part_4.md ✅
+    AI Recommendation Engine
+
+    12_AI_Recommendation_Part_5.md ✅
+    Prediction & Forecast Engine
+
+    12_AI_Recommendation_Part_6.md ✅
+    REST API & Frontend
+
+    12_AI_Recommendation_Part_7.md ✅
+    AI Governance & Business Rules
+
+    12_AI_Recommendation_Part_8.md ✅
+    Future AI Roadmap
+
+| Modul               | Jumlah Part | Alasan                                                           |
+| ------------------- | ----------: | ---------------------------------------------------------------- |
+| 02_Master_Data      |           5 | CRUD dan referensi master.                                       |
+| 03_Culture_Cycle    |           5 | Siklus budidaya dan business engine.                             |
+| **04_Activities**   |       **7** | Timeline operasional, event, notifikasi, dan analitik aktivitas. |
+| 05_Warehouse        |           6 | Persediaan, mutasi, dan stok.                                    |
+| 06_Harvest          |           6 | Proses panen, grading, dan penjualan.                            |
+| 07_Finance          |         7–8 | Pendapatan, biaya, HPP, profit, dan laporan keuangan.            |
+| 08_Dashboard        |           6 | KPI, visualisasi, dan monitoring.                                |
+| 09_Report_Analytics |           7 | Laporan operasional dan analitik lintas modul.                   |
+
+
+FASE 2 — Siapkan Repository
+
+Struktur repository yang saya rekomendasikan:
+
+UtiFarm/
+│
+├── README.md ✅
+├── README_AI.md ✅
+├── PROJECT_STATUS.md ✅
+├── CHANGELOG.md ✅
+│ 
+├── docs/ ✅
+│
+├── backend/
+│
+├── frontend/
+│
+└── docker/
+
+Di fase ini belum ada coding, hanya struktur proyek.
+
+FASE 3 — Setelah Blueprint Selesai
+
+Baru gunakan Codex.
+
+Berikan ke Codex:
+
+README_AI.md
+
+↓
+
+PROJECT_STATUS.md
+
+↓
+
+Folder docs
+
+↓
+
+Implementasikan Foundation
+FASE 4 — Coding
+
+Urutannya jangan diacak.
+
+Foundation
+
+↓
+
+Master Data
+
+↓
+
+Culture Cycle
+
+↓
+
+Activities
+
+↓
+
+Warehouse
+
+↓
+
+Harvest
+
+↓
+
+Finance
+
+↓
+
+Dashboard
+
+↓
+
+Report
+FASE 5 — Setiap Modul Selesai
+
+Selalu lakukan:
+
+Update PROJECT_STATUS.md
+
+↓
+
+Update CHANGELOG.md
+
+↓
+
+Commit GitHub
+
+## Folder yang di rapikan
+backend/
+
+app/
+
+Modules/
+
+MasterData/
+
+CultureCycle/
+
+Activities/
+
+Warehouse/
+
+Harvest/
+
+Finance/
+
+Dashboard/
+
+Report/
+
+Notification/
+
+Administration/
+
+AI/

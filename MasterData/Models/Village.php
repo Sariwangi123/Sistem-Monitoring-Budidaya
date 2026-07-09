@@ -1,0 +1,40 @@
+<?php
+
+namespace MasterData\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Shared\Support\Auditable;
+use Shared\Support\HasUuidColumn;
+
+class Village extends Model
+{
+    use Auditable;
+    use HasUuidColumn;
+    use SoftDeletes;
+
+    protected $table = 'villages';
+
+    protected $fillable = [
+        'uuid',
+        'district_id',
+        'village_code',
+        'village_name',
+        'description',
+        'created_by',
+        'updated_by',
+        'deleted_by',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
+    public function district(): BelongsTo
+    {
+        return $this->belongsTo(District::class);
+    }
+}
