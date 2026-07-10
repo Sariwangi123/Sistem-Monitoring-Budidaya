@@ -103,7 +103,7 @@ abstract class BaseController extends Controller
 
     public function restore(string $uuid): JsonResponse
     {
-        $model = $this->service->findByUuid($uuid);
+        $model = $this->service->findTrashedByUuid($uuid);
 
         if (!$model) {
             abort(404, 'Resource not found');
@@ -120,7 +120,7 @@ abstract class BaseController extends Controller
 
     public function forceDelete(string $uuid): JsonResponse
     {
-        $model = $this->service->findByUuid($uuid);
+        $model = $this->service->findTrashedByUuid($uuid);
 
         if (!$model) {
             abort(404, 'Resource not found');

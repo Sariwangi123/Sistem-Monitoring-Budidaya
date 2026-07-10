@@ -15,6 +15,7 @@ class ActivityCommentFactory extends Factory
             'activity_id' => \Activities\Models\Activity::inRandomOrder()->first()?->id ?? 1,
             'user_id' => \Modules\Users\Models\User::inRandomOrder()->first()?->id ?? 1,
             'comment' => $this->faker->paragraph,
+            'comment_date' => now(),
         ];
     }
 }

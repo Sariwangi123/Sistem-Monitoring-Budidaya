@@ -22,6 +22,10 @@
       "Shared\\": "Shared/",
       "Infrastructure\\": "Infrastructure/",
       "Modules\\": "Modules/",
+      "MasterData\\": "MasterData/",
+      "CultureCycle\\": "CultureCycle/",
+      "Activities\\": "Activities/",
+      "Warehouse\\": "Warehouse/",
       "Database\\Factories\\": "database/factories/",
       "Database\\Seeders\\": "database/seeders/"
     }

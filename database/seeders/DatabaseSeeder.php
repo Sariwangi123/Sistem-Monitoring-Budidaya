@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Database\Seeders\CultureCycle\CultureCycleSeeder;
+use Database\Seeders\Warehouse\WarehouseSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -66,5 +67,6 @@ final class DatabaseSeeder extends Seeder
         ));
 
         $this->call(CultureCycleSeeder::class);
+        $this->call(WarehouseSeeder::class);
     }
 }

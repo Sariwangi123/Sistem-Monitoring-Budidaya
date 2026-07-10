@@ -20,10 +20,28 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 
 # [Unreleased]
 
+## Added
+
+- Added Activities API route registration.
+- Added Activities category and type controllers, services, requests, routes, and feature API tests.
+- Added Laravel base test case for project feature and unit tests.
+- Added Warehouse database migrations for warehouses, locations, inventory items, batches, movements, current stocks, stock opnames, and stock opname details.
+- Added Warehouse Eloquent models and relationships for inventory management.
+- Added Warehouse model factory support, factories, and seeder for inventory seed/test data.
+- Added Warehouse repositories for warehouse, inventory, stock, and stock opname models.
+- Added Warehouse services for warehouse, inventory, stock, and stock opname workflows.
+- Added Warehouse API requests, resources, controllers, routes, and policies.
+- Added Warehouse feature API tests for warehouse CRUD, inventory movement, stock, and stock opname flows.
+
+## Fixed
+
+- Fixed module PSR-4 autoload mapping for `MasterData`, `CultureCycle`, and `Activities`.
+- Fixed base repository methods required by modular services.
+- Fixed Activities request/resource field alignment with Activities migrations.
+- Fixed restore and force delete flow for soft-deleted modular resources.
+
 ## Planned
 
-- Dokumentasi 03_Culture_Cycle
-- Dokumentasi 04_Activities
 - Dokumentasi 05_Warehouse
 - Dokumentasi 06_Harvest
 - Dokumentasi 07_Finance

@@ -2,9 +2,9 @@
 
 namespace MasterData\Services;
 
-use Infrastructure\Persistence\BaseRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use MasterData\Repositories\BaseRepository;
 
 abstract class BaseService
 {
@@ -23,6 +23,11 @@ abstract class BaseService
     public function findByUuid(string $uuid): ?object
     {
         return $this->repository->findByUuid($uuid);
+    }
+
+    public function findTrashedByUuid(string $uuid): ?object
+    {
+        return $this->repository->findTrashedByUuid($uuid);
     }
 
     public function getAll(array $columns = ['*']): Collection

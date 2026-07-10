@@ -24,9 +24,40 @@ abstract class EloquentRepository implements RepositoryInterface
         return $this->query($filters)->get();
     }
 
-    public function find(string $id): ?Model
+    public function find(int|string $id): ?Model
     {
         return $this->model->newQuery()->whereKey($id)->first();
+    }
+
+    public function findById(int|string $id): ?Model
+    {
+        return $this->find($id);
+    }
+
+    public function findByUuid(string $uuid): ?Model
+    {
+        return $this->model->newQuery()->where('uuid', $uuid)->first();
+    }
+
+    public function findTrashedByUuid(string $uuid): ?Model
+    {
+        $query = $this->model->newQuery();
+
+        if (method_exists($this->model, 'bootSoftDeletes')) {
+            $query->withTrashed();
+        }
+
+        return $query->where('uuid', $uuid)->first();
+    }
+
+    public function getAll(array $columns = ['*']): Collection
+    {
+        return $this->model->newQuery()->get($columns);
+    }
+
+    public function getPaginated(int $perPage = 15, array $columns = ['*']): LengthAwarePaginator
+    {
+        return $this->model->newQuery()->latest()->paginate($perPage, $columns);
     }
 
     public function create(array $payload): Model
@@ -34,7 +65,7 @@ abstract class EloquentRepository implements RepositoryInterface
         return $this->model->newQuery()->create($payload);
     }
 
-    public function update(string $id, array $payload): Model
+    public function update(int|string $id, array $payload): Model
     {
         $model = $this->model->newQuery()->whereKey($id)->firstOrFail();
         $model->update($payload);
@@ -42,9 +73,21 @@ abstract class EloquentRepository implements RepositoryInterface
         return $model->refresh();
     }
 
-    public function delete(string $id): void
+    public function delete(int|string $id): bool
     {
-        $this->model->newQuery()->whereKey($id)->firstOrFail()->delete();
+        return (bool) $this->model->newQuery()->whereKey($id)->firstOrFail()->delete();
+    }
+
+    public function search(string $search, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->query(['search' => $search])->paginate($perPage);
+    }
+
+    public function getSelectOptions(string $valueColumn = 'name', string $keyColumn = 'id'): Collection
+    {
+        return $this->model->newQuery()
+            ->orderBy($valueColumn)
+            ->get([$keyColumn, $valueColumn]);
     }
 
     protected function query(array $filters = []): Builder

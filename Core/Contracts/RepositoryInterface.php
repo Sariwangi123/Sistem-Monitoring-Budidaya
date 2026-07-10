@@ -12,11 +12,11 @@ interface RepositoryInterface
 
     public function all(array $filters = []): Collection;
 
-    public function find(string $id): ?Model;
+    public function find(int|string $id): ?Model;
 
     public function create(array $payload): Model;
 
-    public function update(string $id, array $payload): Model;
+    public function update(int|string $id, array $payload): Model;
 
-    public function delete(string $id): void;
+    public function delete(int|string $id): bool;
 }

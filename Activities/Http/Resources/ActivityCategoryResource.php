@@ -12,13 +12,10 @@ class ActivityCategoryResource extends BaseResource
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
-            'code' => $this->code,
-            'name' => $this->name,
+            'category_code' => $this->category_code,
+            'category_name' => $this->category_name,
             'description' => $this->description,
-            'icon' => $this->icon,
-            'color' => $this->color,
-            'sort_order' => $this->sort_order,
-            'is_active' => $this->is_active,
+            'status' => $this->status,
             ...$this->getAuditFields($request),
         ];
     }

@@ -9,21 +9,18 @@ class ActivityCategoryRequest extends BaseRequest
 {
     public function rules(): array
     {
-        $id = $this->route('id');
+        $uuid = $this->route('category') ?? $this->route('id');
 
         return [
-            'code' => [
+            'category_code' => [
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('activity_categories', 'code')->ignore($id),
+                Rule::unique('activity_categories', 'category_code')->ignore($uuid, 'uuid'),
             ],
-            'name' => ['required', 'string', 'max:255'],
+            'category_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'icon' => ['nullable', 'string', 'max:100'],
-            'color' => ['nullable', 'string', 'max:50'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
-            'is_active' => ['boolean'],
+            'status' => ['required', 'string', Rule::in(['Active', 'Inactive'])],
         ];
     }
 }

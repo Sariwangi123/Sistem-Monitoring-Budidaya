@@ -1,5 +1,6 @@
 <?php
 
+use Activities\Routes\ActivitiesRoutes;
 use CultureCycle\Routes\CultureCycleRoutes;
 use Illuminate\Support\Facades\Route;
 use MasterData\Routes\MasterDataRoutes;
@@ -7,6 +8,7 @@ use Modules\Auth\Routes\AuthRoutes;
 use Modules\Notifications\Routes\NotificationRoutes;
 use Modules\Settings\Routes\SettingRoutes;
 use Modules\Users\Routes\UserRoutes;
+use Warehouse\Routes\WarehouseRoutes;
 
 Route::prefix('v1')->group(function (): void {
     AuthRoutes::register();
@@ -14,6 +16,8 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware('auth:sanctum')->group(function (): void {
         MasterDataRoutes::register();
         CultureCycleRoutes::register();
+        ActivitiesRoutes::register();
+        WarehouseRoutes::register();
         UserRoutes::register();
         SettingRoutes::register();
         NotificationRoutes::register();

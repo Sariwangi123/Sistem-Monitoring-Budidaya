@@ -5,7 +5,7 @@ Version : 1.0
 
 Status : Active
 
-Last Updated : 2026-07-09
+Last Updated : 2026-07-10
 
 ---
 
@@ -27,11 +27,11 @@ Status
 
 # Current Active Module
 
-04 - Activities
+05 - Warehouse
 
 Current Task
 
-Implementation
+Verification
 
 Status
 
@@ -54,8 +54,8 @@ Status
 | Milestone Foundation | ✅ Completed |
 | Master Data Documentation | ✅ Completed |
 | Culture Cycle | ✅ Completed |
-| Activities | 🔄 In Progress |
-| Warehouse | ⏸ Not Started |
+| Activities | ✅ Completed |
+| Warehouse | 🔄 In Progress |
 | Harvest | ⏸ Not Started |
 | Finance | ⏸ Not Started |
 | Dashboard | ⏸ Not Started |
@@ -112,13 +112,19 @@ Status
 - [x] Part 4 - Repositories
 - [x] Part 5 - Services
 - [x] Part 6 - API Layer (Requests, Resources, Controllers, Routes, Policies)
-- [ ] Part 7 - Testing
+- [x] Part 7 - Testing
 
 ---
 
 ## Warehouse
 
-- [ ] Not Started
+- [x] Part 1 - Database Migrations
+- [x] Part 2 - Models
+- [x] Part 3 - Factories & Seeders
+- [x] Part 4 - Repositories
+- [x] Part 5 - Services
+- [x] Part 6 - API Layer (Requests, Resources, Controllers, Routes, Policies)
+- [x] Part 7 - Testing
 
 ---
 
@@ -174,6 +180,10 @@ Activities
 
 ✅ Completed
 
+Warehouse
+
+🔄 In Progress
+
 ---
 
 ## Frontend
@@ -204,11 +214,11 @@ Sprint 02
 
 Focus
 
-Culture Cycle & Activities
+Warehouse
 
 Objective
 
-Menyelesaikan seluruh implementasi Culture Cycle dan Activities.
+Menyiapkan implementasi modul Warehouse sesuai dependency.
 
 ---
 
@@ -216,9 +226,9 @@ Menyelesaikan seluruh implementasi Culture Cycle dan Activities.
 
 Prioritas berikutnya:
 
-1. Melanjutkan implementasi testing untuk modul Activities (Part 7).
-2. Implementasi modul Warehouse.
-3. Dokumentasi modul berikutnya.
+1. Menjalankan verifikasi Warehouse API layer setelah PHP/Composer tersedia.
+2. Menjalankan `php artisan test --filter=WarehouseApiTest`.
+3. Menjaga Dashboard, Harvest, Finance, Report, Notification, Administration, dan AI tetap belum diimplementasikan sebelum dependency selesai.
 
 ---
 
@@ -226,7 +236,7 @@ Prioritas berikutnya:
 
 Saat ini:
 
-Tidak ada blocker.
+- PHP dan Composer belum tersedia di PATH environment ini, sehingga `php artisan test` dan `composer dump-autoload` belum bisa dijalankan.
 
 ---
 
