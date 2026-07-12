@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->uuid()->unique();
             $table->foreignId('province_id')->constrained()->cascadeOnUpdate()->restrictOnDelete();
+            $table->string('city_code', 20)->unique();
             $table->string('city_name');
             $table->timestamps();
             $table->softDeletes();
@@ -19,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
 
+            $table->index('city_code');
             $table->index('city_name');
             $table->index('deleted_at');
         });

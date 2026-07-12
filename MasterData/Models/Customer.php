@@ -6,11 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Shared\Support\Auditable;
+use Shared\Support\HasModuleFactory;
 use Shared\Support\HasUuidColumn;
 
 class Customer extends Model
 {
     use Auditable;
+    use HasModuleFactory;
     use HasUuidColumn;
     use SoftDeletes;
 

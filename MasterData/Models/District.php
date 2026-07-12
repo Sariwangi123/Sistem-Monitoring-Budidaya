@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Shared\Support\Auditable;
+use Shared\Support\HasModuleFactory;
 use Shared\Support\HasUuidColumn;
 
 class District extends Model
 {
     use Auditable;
+    use HasModuleFactory;
     use HasUuidColumn;
     use SoftDeletes;
 

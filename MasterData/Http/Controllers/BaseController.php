@@ -58,7 +58,7 @@ abstract class BaseController extends Controller
     public function store(Request $request): JsonResponse
     {
         $formRequest = app($this->requestClass);
-        $formRequest->validate($request->all());
+        $formRequest->validateResolved();
 
         $model = $this->service->create($request->all());
 
@@ -78,7 +78,7 @@ abstract class BaseController extends Controller
         }
 
         $formRequest = app($this->requestClass);
-        $formRequest->validate($request->all());
+        $formRequest->validateResolved();
 
         $model = $this->service->update($model->id, $request->all());
 

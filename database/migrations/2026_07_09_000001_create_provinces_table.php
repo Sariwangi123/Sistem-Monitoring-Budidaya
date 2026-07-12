@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('provinces', function (Blueprint $table) {
             $table->id();
             $table->uuid()->unique();
+            $table->string('province_code', 20)->unique();
             $table->string('province_name');
             $table->timestamps();
             $table->softDeletes();
@@ -18,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
 
+            $table->index('province_code');
             $table->index('province_name');
             $table->index('deleted_at');
         });

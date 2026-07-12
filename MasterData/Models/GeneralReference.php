@@ -5,11 +5,13 @@ namespace MasterData\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Shared\Support\Auditable;
+use Shared\Support\HasModuleFactory;
 use Shared\Support\HasUuidColumn;
 
 class GeneralReference extends Model
 {
     use Auditable;
+    use HasModuleFactory;
     use HasUuidColumn;
     use SoftDeletes;
 

@@ -39,6 +39,33 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Fixed base repository methods required by modular services.
 - Fixed Activities request/resource field alignment with Activities migrations.
 - Fixed restore and force delete flow for soft-deleted modular resources.
+- Fixed `HasFactory` trait collision in module models by creating `Shared/Support/HasModuleFactory.php` trait for proper factory resolution.
+- Updated all MasterData (22 models), CultureCycle (5 models), and Activities (5 models) to use `HasModuleFactory`.
+- Fixed `Role` model explicit table name for `role_permission` pivot.
+- Fixed `HasFactory` + `HasModuleFactory` collision in `CultureCycle/Models/CultureCycle.php`.
+- Fixed `use HasFactory;` import missing in Activities models (ActivityCategory, ActivityType, Activity, ActivityAttachment, ActivityComment).
+- Fixed `_code` column naming in MasterData migrations (`province_code`, `city_code`, etc.) for proper API resource prefix.
+
+## Verification
+
+- Ran checklist verifikasi milestone (2026-07-10):
+  - ✅ `composer install` — passed
+  - ✅ `php artisan route:list` — passed
+   - ✅ `php artisan test` — 2 passed (sebelum Docker; setelah Docker: seluruh 6 WarehouseApiTest + test lainnya lulus)
+   - ✅ `php artisan about` — Laravel 12.63.0, PHP 8.4.23
+   - ✅ `php artisan migrate:status` — 47 migrations di batch [1] Ran
+   - ✅ WarehouseApiTest: 6 passed (34 assertions) — CRUD, inventory batch→stock→movement, stock opname, validasi, restore/force delete, unauthenticated
+   - ✅ `composer install` — nothing to install, optimized autoload
+   - ✅ Seluruh 47 migrations telah dijalankan (foundation, master data, culture cycle, activities, warehouse)
+   - 🏁 **Warehouse module — ✅ Completed**
+- Ran checklist verifikasi milestone (2026-07-12):
+  - ✅ `composer install` — nothing to install, optimized autoload
+  - ✅ `php artisan route:list` — 224 routes registered
+  - ✅ `php artisan test` — 28 passed, 0 failures (all modules: MasterData, CultureCycle, Activities, Warehouse)
+  - ✅ `php artisan about` — Laravel 12.63.0, PHP 8.4.23, PostgreSQL
+  - ✅ `php artisan migrate:status` — 48 migrations in batch [1] Ran (foundation, master data, culture cycle, activities, warehouse)
+  - ✅ All Docker containers running, all tests pass
+  - 🏁 **Verifikasi milestone — ✅ Passed**
 
 ## Planned
 

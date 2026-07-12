@@ -5,11 +5,13 @@ namespace CultureCycle\Models;
 use App\Models\Traits\HasCompanyTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Shared\Support\HasModuleFactory;
 
 class CultureCycle extends Model
 {
-    use SoftDeletes, HasUuids, HasCompanyTrait;
+    use HasModuleFactory;
+    use SoftDeletes;
+    use HasCompanyTrait;
 
     protected $table = 'culture_cycles';
 

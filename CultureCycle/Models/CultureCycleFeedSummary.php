@@ -4,11 +4,12 @@ namespace CultureCycle\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Shared\Support\HasModuleFactory;
 
 class CultureCycleFeedSummary extends Model
 {
-    use SoftDeletes, HasUuids;
+    use HasModuleFactory;
+    use SoftDeletes;
 
     protected $table = 'culture_cycle_feed_summaries';
 
