@@ -58,6 +58,7 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Added Report Analytics Part 2 architecture foundation with Universal Report Engine, Report Registry, Report Definition metadata, Template Engine, Template Resolver, Report Builder, Report Section abstraction, service-layer Data Collector abstraction, Data Formatter, Rendering Engine abstraction, Export Engine abstraction, Report Layout abstraction, file naming convention service, locale-aware formatting foundation, service container bindings, and unit tests.
 - Added Report Analytics Part 3 REST API layer with report registry endpoints, category report endpoints, historical/comparative/analytics endpoints, generate preview endpoint, export metadata adapter endpoint, scheduled report foundation endpoints, Form Request validation, RBAC per report category, Universal Report Engine integration, execution logging, and feature tests.
 - Added Report Analytics Part 4 frontend Report Workspace with hash-based route integration, report navigation sidebar, category workspaces, report registry list, global search, sorting/filtering, reusable filter panel, preview panel, export metadata panel, generate preview action, export progress state, loading/error/empty states, last generated metadata, scheduled report UI foundation, and responsive three/two/one-panel layout.
+- Added Report Analytics Part 5 report engine hardening with permission validation, parameter validation, template validation, data aggregation foundation, scoped report cache service, queue/background job metadata foundation, chunk-processing metadata, streaming-export metadata, scheduled report service foundation, audit metadata, execution logging, retry metadata, and custom report exceptions.
 
 ## Fixed
 
@@ -202,6 +203,14 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
   - ✅ `docker compose exec app php artisan route:list --path=api/v1/reports` — 21 Report Analytics routes registered.
   - ✅ `docker compose exec app php artisan test` — 61 passed, 475 assertions.
   - ✅ Report Analytics Part 4 frontend workspace completed; Report Analytics remains in progress for Part 5.
+- Ran Report Analytics Part 5 engine hardening verification (2026-07-15):
+  - ✅ `docker compose exec app composer dump-autoload` — 6685 classes, optimized autoload regenerated.
+  - ✅ `docker compose exec app php artisan route:list --path=api/v1/reports` — 21 Report Analytics routes registered.
+  - ✅ `docker compose exec app php artisan test` — 62 passed, 485 assertions.
+  - ✅ `npm run build` — TypeScript and Vite production build passed.
+  - ✅ `npm run lint` — ESLint passed.
+  - ✅ `npm run type-check` — not available as a separate script; TypeScript check runs through `npm run build`.
+  - ✅ Report Analytics Part 5 engine hardening completed; Report Analytics remains in progress for Part 6.
 
 ## Planned
 

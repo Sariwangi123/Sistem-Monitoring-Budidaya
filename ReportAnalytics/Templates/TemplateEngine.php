@@ -2,6 +2,7 @@
 
 namespace ReportAnalytics\Templates;
 
+use ReportAnalytics\Exceptions\InvalidReportTemplateException;
 use ReportAnalytics\Support\ReportDefinition;
 use ReportAnalytics\Support\ReportTemplate;
 
@@ -13,6 +14,12 @@ final class TemplateEngine
 
     public function resolve(ReportDefinition $definition): ReportTemplate
     {
-        return $this->resolver->resolve($definition->template);
+        $template = $this->resolver->resolve($definition->template);
+
+        if ($template->key !== $definition->template || $template->sections === []) {
+            throw InvalidReportTemplateException::forTemplate($definition->template);
+        }
+
+        return $template;
     }
 }

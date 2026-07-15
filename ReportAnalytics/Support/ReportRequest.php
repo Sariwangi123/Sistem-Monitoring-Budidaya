@@ -9,7 +9,9 @@ final readonly class ReportRequest
         public string $reportId,
         public string $format = 'json',
         public string $locale = 'id',
-        public array $parameters = []
+        public array $parameters = [],
+        public array $roleSlugs = [],
+        public ?int $userId = null
     ) {
     }
 }

@@ -122,7 +122,11 @@ final class ReportAnalyticsController extends Controller
         $definition = $this->service->definitionFor($request->validated('report_type'));
         Gate::authorize('generate-report', [$definition->category]);
 
-        return new ReportAnalyticsResource($this->service->generate($request->validated()));
+        return new ReportAnalyticsResource($this->service->generate(
+            $request->validated(),
+            $this->roleSlugs($request),
+            $request->user()?->id
+        ));
     }
 
     public function export(ReportExportRequest $request, string $report): JsonResource
@@ -144,7 +148,10 @@ final class ReportAnalyticsController extends Controller
     {
         Gate::authorize('schedule-report');
 
-        return new ReportAnalyticsResource($this->service->createSchedule($request->validated()));
+        return new ReportAnalyticsResource($this->service->createSchedule(
+            $request->validated(),
+            $this->roleSlugs($request)
+        ));
     }
 
     public function destroySchedule(Request $request, string $uuid): JsonResource

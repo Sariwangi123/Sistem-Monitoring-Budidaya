@@ -4,6 +4,8 @@ namespace ReportAnalytics\Services;
 
 use Dashboard\Services\DashboardService;
 use Illuminate\Support\Facades\Log;
+use ReportAnalytics\Exceptions\ReportGenerationException;
+use ReportAnalytics\Exceptions\ReportNotFoundException;
 use ReportAnalytics\Engines\UniversalReportEngine;
 use ReportAnalytics\Registry\ReportRegistry;
 use ReportAnalytics\Support\ReportDefinition;
@@ -14,7 +16,9 @@ final class ReportAnalyticsService
     public function __construct(
         private DashboardService $dashboardService,
         private ReportRegistry $registry,
-        private UniversalReportEngine $engine
+        private UniversalReportEngine $engine,
+        private ReportCacheService $cacheService,
+        private ScheduledReportService $scheduledReportService
     ) {
     }
 
@@ -47,7 +51,7 @@ final class ReportAnalyticsService
             'meta' => [
                 'read_only' => true,
                 'generate_never_store' => true,
-                'engine_status' => 'foundation_ready',
+                'engine_status' => 'hardened_foundation_ready',
             ],
         ];
     }
@@ -98,7 +102,10 @@ final class ReportAnalyticsService
         }
 
         return [
-            'data' => $this->engine->generate(new ReportRequest($definition->id)),
+            'data' => $this->engine->generate(new ReportRequest(
+                reportId: $definition->id,
+                roleSlugs: $roleSlugs
+            )),
             'message' => 'Report engine foundation preview generated.',
             'meta' => [
                 'read_only' => true,
@@ -113,7 +120,7 @@ final class ReportAnalyticsService
         $definition = $this->registry->get($reportId);
 
         if (! $definition) {
-            abort(404, 'Report definition not found');
+            throw ReportNotFoundException::forReport($reportId);
         }
 
         return $definition;
@@ -121,12 +128,19 @@ final class ReportAnalyticsService
 
     public function registry(array $roleSlugs, array $filters = []): array
     {
-        return $this->respond('report.registry', $roleSlugs, $filters, fn (): array => [
+        return $this->respond('report.registry', $roleSlugs, $filters, fn (): array => $this->cacheService->rememberMetadata('registry', [
+            'roles' => $roleSlugs,
+            'filters' => $filters,
+        ], fn (): array => [
             'items' => array_map(
                 fn (ReportDefinition $definition): array => $definition->toArray(),
                 $this->filterDefinitions($this->registry->visibleForRoles($roleSlugs), $filters)
             ),
-        ]);
+            'cache' => [
+                'enabled' => true,
+                'scope' => 'registry_metadata',
+            ],
+        ]));
     }
 
     public function registryDetail(string $reportId): array
@@ -207,12 +221,12 @@ final class ReportAnalyticsService
         ]);
     }
 
-    public function generate(array $payload): array
+    public function generate(array $payload, array $roleSlugs = [], ?int $userId = null): array
     {
         $definition = $this->registry->get($payload['report_type']);
 
         if (! $definition) {
-            abort(404, 'Report definition not found');
+            throw ReportNotFoundException::forReport($payload['report_type']);
         }
 
         $format = $payload['export_format'];
@@ -226,15 +240,21 @@ final class ReportAnalyticsService
             abort(422, 'Export format is not supported by this report');
         }
 
-        return $this->respond('report.generate', [], $payload, fn (): array => $this->engine->generate(new ReportRequest(
-            reportId: $definition->id,
-            format: $format,
-            locale: $payload['locale'] ?? 'id',
-            parameters: [
-                'filter' => $payload['filter'] ?? [],
-                'parameter' => $payload['parameter'] ?? [],
-            ]
-        )), 'Report generated as preview metadata.');
+        try {
+            return $this->respond('report.generate', $roleSlugs, $payload, fn (): array => $this->engine->generate(new ReportRequest(
+                reportId: $definition->id,
+                format: $format,
+                locale: $payload['locale'] ?? 'id',
+                parameters: [
+                    'filter' => $payload['filter'] ?? [],
+                    'parameter' => $payload['parameter'] ?? [],
+                ],
+                roleSlugs: $roleSlugs,
+                userId: $userId
+            )), 'Report generated as preview metadata.');
+        } catch (ReportGenerationException $exception) {
+            throw $exception->getPrevious() ?? $exception;
+        }
     }
 
     public function exportMetadata(string $reportId, array $filters): array
@@ -254,51 +274,46 @@ final class ReportAnalyticsService
         return $this->respond('report.export.metadata', [], $filters, fn (): array => [
             'report' => $definition->toArray(),
             'format' => $format,
-            'adapter' => 'in_memory_metadata',
+            'adapter' => 'production_ready_metadata_adapter',
             'production_file_export' => false,
+            'queue' => [
+                'enabled' => true,
+                'status' => 'pending',
+                'progress' => 0,
+                'retry' => [
+                    'attempts' => 0,
+                    'max_attempts' => 3,
+                    'retryable' => true,
+                ],
+            ],
+            'streaming' => [
+                'enabled' => true,
+                'production_file_written' => false,
+            ],
+            'file_size' => null,
             'supported_export_formats' => $definition->supportedExportFormats,
         ], 'Report export metadata retrieved.');
     }
 
     public function schedules(array $filters = []): array
     {
-        return $this->respond('report.schedules.index', [], $filters, fn (): array => [
-            'items' => [],
-            'foundation' => [
-                'schedule_support' => 'contract_only',
-                'production_scheduler' => false,
-                'queue_job' => false,
-            ],
-        ], 'Report schedule foundation retrieved.');
+        return $this->respond('report.schedules.index', [], $filters, fn (): array => $this->scheduledReportService->foundation($filters), 'Report schedule foundation retrieved.');
     }
 
-    public function createSchedule(array $payload): array
+    public function createSchedule(array $payload, array $roleSlugs = []): array
     {
         $definition = $this->registry->get($payload['report_id']);
 
         if (! $definition) {
-            abort(404, 'Report definition not found');
+            throw ReportNotFoundException::forReport($payload['report_id']);
         }
 
-        return $this->respond('report.schedules.store', [], $payload, fn (): array => [
-            'uuid' => (string) str()->uuid(),
-            'report' => $definition->toArray(),
-            'frequency' => $payload['frequency'],
-            'export_format' => $payload['export_format'],
-            'timezone' => $payload['timezone'] ?? config('app.timezone'),
-            'filters' => $payload['filters'] ?? [],
-            'status' => 'Accepted',
-            'production_scheduler' => false,
-        ], 'Report schedule foundation accepted.');
+        return $this->respond('report.schedules.store', $roleSlugs, $payload, fn (): array => $this->scheduledReportService->create($payload, $roleSlugs), 'Report schedule foundation accepted.');
     }
 
     public function deleteSchedule(string $uuid): array
     {
-        return $this->respond('report.schedules.destroy', [], ['uuid' => $uuid], fn (): array => [
-            'uuid' => $uuid,
-            'deleted' => true,
-            'production_scheduler' => false,
-        ], 'Report schedule foundation deleted.');
+        return $this->respond('report.schedules.destroy', [], ['uuid' => $uuid], fn (): array => $this->scheduledReportService->deactivate($uuid), 'Report schedule foundation deleted.');
     }
 
     /** @return array<int, array<string, mixed>> */
@@ -461,9 +476,9 @@ final class ReportAnalyticsService
             'No transaction deletion',
             'No permanent transaction snapshot',
             'No direct database access from controller',
-            'No production export file in Part 2',
-            'No queue or scheduled report in Part 2',
-            'No frontend report workspace in Part 2',
+            'No production export file persisted as source of truth',
+            'Queue foundation metadata only in Part 5',
+            'Scheduled delivery production disabled in Part 5',
         ];
     }
 
@@ -483,16 +498,20 @@ final class ReportAnalyticsService
     private function engineArchitecture(): array
     {
         return [
-            'universal_report_engine' => 'Foundation Ready',
-            'report_registry' => 'Foundation Ready',
-            'template_engine' => 'Foundation Ready',
-            'template_resolver' => 'Foundation Ready',
-            'report_builder' => 'Foundation Ready',
+            'universal_report_engine' => 'Hardened Foundation Ready',
+            'report_registry' => 'Cached Metadata Ready',
+            'template_engine' => 'Template Validation Ready',
+            'template_resolver' => 'Template Metadata Ready',
+            'report_builder' => 'Orchestration Ready',
             'report_section' => 'Foundation Ready',
             'data_collector' => 'Service Layer Only',
+            'data_aggregator' => 'Read Only Aggregation Foundation',
             'data_formatter' => 'Locale Aware Foundation',
-            'rendering_engine' => 'Abstraction Ready',
-            'export_engine' => 'In Memory Abstraction Only',
+            'rendering_engine' => 'Workflow Ready',
+            'export_engine' => 'Production Ready Metadata Adapter',
+            'cache_engine' => 'Scoped Metadata Cache Ready',
+            'queue_engine' => 'Background Job Foundation Ready',
+            'schedule_engine' => 'Schedule Foundation Ready',
             'report_layout' => 'Foundation Ready',
             'file_naming' => 'REPORTTYPE-YYYYMMDD-HHMMSS',
         ];

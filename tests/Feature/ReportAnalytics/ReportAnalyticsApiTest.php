@@ -85,6 +85,9 @@ final class ReportAnalyticsApiTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.definition.id', 'executive-summary')
             ->assertJsonPath('data.export.production_file_export', false)
+            ->assertJsonPath('data.queue.queue_enabled', true)
+            ->assertJsonPath('data.cache.enabled', true)
+            ->assertJsonPath('data.retry.retryable', true)
             ->assertJsonPath('meta.generate_never_store', true);
 
         $this->postJson(self::API_PREFIX.'/schedules', [
@@ -99,6 +102,8 @@ final class ReportAnalyticsApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.status', 'Accepted')
+            ->assertJsonPath('data.lifecycle_status', 'active')
+            ->assertJsonPath('data.queue_status', 'pending')
             ->assertJsonPath('data.production_scheduler', false);
 
         $this->deleteJson(self::API_PREFIX.'/schedules/'.(string) str()->uuid())

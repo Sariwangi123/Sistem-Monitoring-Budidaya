@@ -102,7 +102,23 @@ final class ReportEngineTest extends TestCase
         $this->assertSame('executive-summary', $result['template']['key']);
         $this->assertSame('json', $result['export']['format']);
         $this->assertFalse($result['export']['production_file_export']);
+        $this->assertSame('production_ready_metadata_adapter', $result['export']['adapter']);
+        $this->assertTrue($result['queue']['queue_enabled']);
+        $this->assertTrue($result['cache']['enabled']);
+        $this->assertContains('data_aggregation', $result['meta']['workflow']);
         $this->assertTrue($result['meta']['read_only']);
         $this->assertTrue($result['meta']['generate_never_store']);
+    }
+
+    public function test_universal_report_engine_blocks_disallowed_role_before_processing(): void
+    {
+        $this->expectException(\ReportAnalytics\Exceptions\ReportPermissionException::class);
+
+        app(UniversalReportEngine::class)->generate(new ReportRequest(
+            reportId: 'audit-trail',
+            format: 'json',
+            locale: 'id',
+            roleSlugs: ['viewer']
+        ));
     }
 }
