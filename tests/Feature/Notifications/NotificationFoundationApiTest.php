@@ -25,15 +25,19 @@ final class NotificationFoundationApiTest extends TestCase
             ->assertJsonPath('data.module.read_only_business_module', true)
             ->assertJsonPath('data.mvp_channel.key', 'in_app')
             ->assertJsonPath('data.mvp_channel.delivery_enabled', false)
-            ->assertJsonPath('data.architecture.event_bus', false)
-            ->assertJsonPath('data.architecture.delivery_engine', false)
-            ->assertJsonPath('meta.delivery_engine_enabled', false)
+            ->assertJsonPath('data.queue.enabled', true)
+            ->assertJsonPath('data.registry.definition_count', 2)
+            ->assertJsonPath('data.architecture.queue_worker', 'foundation_ready')
+            ->assertJsonPath('meta.delivery_engine_enabled', true)
+            ->assertJsonPath('meta.external_channel_delivery_enabled', false)
             ->assertJsonStructure([
                 'data' => [
                     'categories',
                     'priorities',
                     'statuses',
                     'channels',
+                    'registry',
+                    'queue',
                     'notification_center' => [
                         'summary',
                         'features',

@@ -2,12 +2,22 @@
 
 namespace Modules\Notifications\Services;
 
+use Modules\Notifications\Channels\Contracts\ChannelResolverInterface;
+use Modules\Notifications\EventBus\EventBusInterface;
+use Modules\Notifications\Engines\DeliveryEngine;
+use Modules\Notifications\Engines\NotificationEventEngine;
+use Modules\Notifications\Registry\NotificationRegistry;
 use Modules\Notifications\Repositories\Contracts\NotificationRepositoryInterface;
+use Modules\Notifications\Resolvers\Contracts\RecipientResolverInterface;
 
 final class NotificationService
 {
-    public function __construct(private NotificationRepositoryInterface $notifications)
-    {
+    public function __construct(
+        private NotificationRepositoryInterface $notifications,
+        private NotificationRegistry $registry,
+        private ChannelResolverInterface $channels,
+        private NotificationQueueService $queue
+    ) {
     }
 
     /** @param array<int, string> $roleSlugs */
@@ -45,13 +55,25 @@ final class NotificationService
                 'description' => 'MVP channel foundation for Notification Center display only.',
             ],
             'future_channels' => ['email', 'whatsapp', 'telegram', 'push_notification', 'sms'],
+            'registry' => [
+                'definition_count' => count($this->registry->all()),
+                'definitions' => array_map(
+                    fn ($definition): array => $definition->toArray(),
+                    $this->registry->all()
+                ),
+            ],
+            'queue' => $this->queue->metadata(),
             'architecture' => [
                 'controller' => 'Modules\\Notifications\\Controllers\\NotificationController',
                 'service' => self::class,
                 'repository' => NotificationRepositoryInterface::class,
-                'event_bus' => false,
-                'delivery_engine' => false,
-                'queue_worker' => false,
+                'event_bus' => EventBusInterface::class,
+                'event_engine' => NotificationEventEngine::class,
+                'notification_registry' => NotificationRegistry::class,
+                'recipient_resolver' => RecipientResolverInterface::class,
+                'channel_resolver' => ChannelResolverInterface::class,
+                'delivery_engine' => DeliveryEngine::class,
+                'queue_worker' => 'foundation_ready',
                 'frontend_notification_center' => false,
             ],
             'roles' => $roleSlugs,
@@ -59,8 +81,9 @@ final class NotificationService
                 'does_not_create_business_transaction',
                 'does_not_update_business_transaction',
                 'does_not_delete_business_transaction',
-                'does_not_send_email_or_external_channel_in_part_1',
+                'does_not_send_email_or_external_channel',
                 'business_module_integration_deferred_to_next_part',
+                'external_channel_delivery_disabled',
             ],
         ];
     }
@@ -99,19 +122,21 @@ final class NotificationService
             $this->definition('read', 'Read'),
             $this->definition('archived', 'Archived'),
             $this->definition('failed', 'Failed'),
+            $this->definition('processing', 'Processing'),
+            $this->definition('retry', 'Retry'),
         ];
     }
 
     private function channels(): array
     {
-        return [
-            $this->channel('in_app', 'In-App', true),
-            $this->channel('email', 'Email', false),
-            $this->channel('whatsapp', 'WhatsApp', false),
-            $this->channel('telegram', 'Telegram', false),
-            $this->channel('push_notification', 'Push Notification', false),
-            $this->channel('sms', 'SMS', false),
-        ];
+        return array_map(
+            fn (array $channel): array => [
+                ...$this->channel($channel['key'], str($channel['key'])->replace('_', ' ')->headline()->toString(), $channel['key'] === 'in_app'),
+                'available' => $channel['available'],
+                'external' => $channel['external'],
+            ],
+            $this->channels->supportedChannels()
+        );
     }
 
     private function definition(string $key, string $label, ?int $sortOrder = null): array

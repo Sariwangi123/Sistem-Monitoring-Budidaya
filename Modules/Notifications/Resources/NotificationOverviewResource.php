@@ -22,7 +22,8 @@ final class NotificationOverviewResource extends JsonResource
                 'part' => 'foundation',
                 'read_only_business_module' => true,
                 'event_driven_ready' => true,
-                'delivery_engine_enabled' => false,
+                'delivery_engine_enabled' => true,
+                'external_channel_delivery_enabled' => false,
             ],
         ];
     }
