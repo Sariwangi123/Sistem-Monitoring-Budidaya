@@ -63,6 +63,7 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Marked Report Analytics Module as completed after final verification of Report Analytics Part 1-6 deliverables.
 - Added Notification Part 1 backend foundation with Notification Center overview endpoint, repository contract and implementation, service foundation, controller, API resource, policy, route, category/priority/status/channel definitions, MVP In-App channel metadata, service container binding, and feature tests.
 - Added Notification Part 2 event-driven architecture foundation with immutable Domain Event contract and implementation, sample events, Event Bus abstraction, Notification Registry, Notification Definition metadata, Recipient Resolver, Channel Resolver, In-App channel adapter, Delivery Engine, queue/job foundation, Retry Policy, delivery status workflow, notification record/history foundation, template abstraction, service container bindings, custom exceptions, and unit/feature tests.
+- Added Notification Part 3 REST API layer with Notification Center list, detail, read/read-all, archive/archive-all, delete, preferences, history, search, statistics, retry, registry, templates, export metadata endpoints, Form Request validation, API Resources, user-scoped repository queries, status transition validation, RBAC policies, action logging, preference storage, and feature tests.
 
 ## Fixed
 
@@ -243,6 +244,12 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
   - ✅ `docker compose exec app php artisan route:list --path=api/v1/notifications` — 1 Notification route registered: `GET api/v1/notifications/overview`.
   - ✅ `docker compose exec app php artisan test` — 73 passed, 603 assertions.
   - ✅ Notification Part 2 architecture and event engine foundation completed; Notification remains in progress for Part 3.
+- Ran Notification Part 3 REST API verification (2026-07-15):
+  - ✅ `docker compose exec app composer dump-autoload` — 6737 classes, optimized autoload regenerated.
+  - ✅ `docker compose exec app php artisan route:list --path=api/v1/notifications` — 17 Notification routes registered.
+  - ✅ `docker compose exec app php artisan migrate` — no pending migrations.
+  - ✅ `docker compose exec app php artisan test` — 78 passed, 638 assertions.
+  - ✅ Notification Part 3 REST API completed; Notification remains in progress for Part 4.
 
 ## Planned
 

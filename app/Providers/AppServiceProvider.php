@@ -208,6 +208,11 @@ final class AppServiceProvider extends ServiceProvider
         Gate::define('export-report', [ReportAnalyticsPolicy::class, 'export']);
         Gate::define('schedule-report', [ReportAnalyticsPolicy::class, 'schedule']);
         Gate::define('view-notifications', [NotificationPolicy::class, 'view']);
+        Gate::define('update-notification-status', [NotificationPolicy::class, 'updateStatus']);
+        Gate::define('delete-notifications', [NotificationPolicy::class, 'delete']);
+        Gate::define('update-notification-preferences', [NotificationPolicy::class, 'updatePreferences']);
+        Gate::define('retry-notifications', [NotificationPolicy::class, 'retry']);
+        Gate::define('manage-notification-registry', [NotificationPolicy::class, 'manageRegistry']);
 
         Gate::before(function (User $user): ?bool {
             return $user->roles()->where('slug', 'super-admin')->exists() ? true : null;
