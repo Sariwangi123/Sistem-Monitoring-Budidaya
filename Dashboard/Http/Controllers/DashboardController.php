@@ -2,6 +2,7 @@
 
 namespace Dashboard\Http\Controllers;
 
+use Dashboard\Exceptions\WidgetPermissionException;
 use Dashboard\Http\Requests\DashboardExportRequest;
 use Dashboard\Http\Requests\DashboardQueryRequest;
 use Dashboard\Http\Requests\DashboardRefreshRequest;
@@ -27,7 +28,7 @@ final class DashboardController extends Controller
 
         return new DashboardApiResource($this->service->home(
             $this->roleSlugs($request),
-            $request->validated()
+            $this->validatedWithActor($request)
         ));
     }
 
@@ -56,7 +57,7 @@ final class DashboardController extends Controller
         return new DashboardApiResource($this->service->workspacePayload(
             $workspace,
             $this->roleSlugs($request),
-            $request->validated()
+            $this->validatedWithActor($request)
         ));
     }
 
@@ -64,14 +65,14 @@ final class DashboardController extends Controller
     {
         $this->authorizeDashboard($request, $request->validated('workspace'));
 
-        return new DashboardApiResource($this->service->kpi($this->roleSlugs($request), $request->validated()));
+        return new DashboardApiResource($this->service->kpi($this->roleSlugs($request), $this->validatedWithActor($request)));
     }
 
     public function widgets(DashboardQueryRequest $request): JsonResource
     {
         $this->authorizeDashboard($request, $request->validated('workspace'));
 
-        return new DashboardApiResource($this->service->widgets($this->roleSlugs($request), $request->validated()));
+        return new DashboardApiResource($this->service->widgets($this->roleSlugs($request), $this->validatedWithActor($request)));
     }
 
     public function widgetDetail(Request $request, string $widget): JsonResource
@@ -92,7 +93,12 @@ final class DashboardController extends Controller
     public function refreshWidget(DashboardRefreshRequest $request, string $widget): JsonResource
     {
         $this->authorizeDashboard($request, $request->validated('workspace'));
-        $container = $this->service->refreshWidget($widget, $this->roleSlugs($request), $request->validated());
+
+        try {
+            $container = $this->service->refreshWidget($widget, $this->roleSlugs($request), $this->validatedWithActor($request));
+        } catch (WidgetPermissionException) {
+            abort(403, 'Widget is not available for the current role');
+        }
 
         if (! $container) {
             abort(404, 'Widget not found');
@@ -105,21 +111,21 @@ final class DashboardController extends Controller
     {
         $this->authorizeDashboard($request, $request->validated('workspace'));
 
-        return new DashboardApiResource($this->service->alerts($this->roleSlugs($request), $request->validated()));
+        return new DashboardApiResource($this->service->alerts($this->roleSlugs($request), $this->validatedWithActor($request)));
     }
 
     public function timeline(DashboardQueryRequest $request): JsonResource
     {
         $this->authorizeDashboard($request, $request->validated('workspace'));
 
-        return new DashboardApiResource($this->service->timeline($this->roleSlugs($request), $request->validated()));
+        return new DashboardApiResource($this->service->timeline($this->roleSlugs($request), $this->validatedWithActor($request)));
     }
 
     public function analytics(DashboardQueryRequest $request): JsonResource
     {
         $this->authorizeDashboard($request, $request->validated('workspace'));
 
-        return new DashboardApiResource($this->service->analytics($this->roleSlugs($request), $request->validated()));
+        return new DashboardApiResource($this->service->analytics($this->roleSlugs($request), $this->validatedWithActor($request)));
     }
 
     public function refresh(DashboardRefreshRequest $request): JsonResource
@@ -128,7 +134,7 @@ final class DashboardController extends Controller
 
         return new DashboardApiResource($this->service->refreshDashboard(
             $this->roleSlugs($request),
-            $request->validated()
+            $this->validatedWithActor($request)
         ));
     }
 
@@ -157,7 +163,7 @@ final class DashboardController extends Controller
     {
         $this->authorizeDashboard($request, $request->validated('workspace'));
 
-        return new DashboardApiResource($this->service->export($this->roleSlugs($request), $request->validated()));
+        return new DashboardApiResource($this->service->export($this->roleSlugs($request), $this->validatedWithActor($request)));
     }
 
     private function authorizeDashboard(Request $request, ?string $workspace = null): void
@@ -176,5 +182,16 @@ final class DashboardController extends Controller
     private function roleSlugs(Request $request): array
     {
         return $request->user()?->roles()->pluck('slug')->all() ?? [];
+    }
+
+    private function validatedWithActor(Request $request): array
+    {
+        $filters = method_exists($request, 'validated') ? $request->validated() : $request->query();
+        $filters['_actor_id'] = $request->user()?->getAuthIdentifier();
+
+        return array_filter(
+            $filters,
+            fn ($value): bool => $value !== null && $value !== ''
+        );
     }
 }

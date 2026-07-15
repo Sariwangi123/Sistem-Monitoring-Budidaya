@@ -2,6 +2,8 @@
 
 namespace Dashboard\Workspaces;
 
+use Dashboard\Exceptions\WorkspaceNotFoundException;
+
 final class DashboardWorkspaceResolver
 {
     /** @var array<string, string> */
@@ -54,6 +56,10 @@ final class DashboardWorkspaceResolver
 
     private function definition(string $workspace): WorkspaceDefinition
     {
+        if (! isset(self::WORKSPACE_TITLES[$workspace])) {
+            throw WorkspaceNotFoundException::forWorkspace($workspace);
+        }
+
         return new WorkspaceDefinition($workspace, self::WORKSPACE_TITLES[$workspace]);
     }
 

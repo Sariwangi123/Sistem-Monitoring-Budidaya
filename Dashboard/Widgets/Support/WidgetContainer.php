@@ -8,7 +8,8 @@ final readonly class WidgetContainer
         public WidgetDefinition $definition,
         public string $status,
         public array $data = [],
-        public ?string $error = null
+        public ?string $error = null,
+        public array $meta = []
     ) {
     }
 }

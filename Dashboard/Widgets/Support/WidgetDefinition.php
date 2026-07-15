@@ -10,7 +10,11 @@ final readonly class WidgetDefinition
         public string $title,
         public string $category,
         public string $size = 'Medium',
-        public ?int $refreshSeconds = null
+        public ?int $refreshSeconds = null,
+        public ?string $component = null,
+        public ?string $requiredPermission = null,
+        public ?string $dataSource = null,
+        public array $allowedRoles = []
     ) {
     }
 }

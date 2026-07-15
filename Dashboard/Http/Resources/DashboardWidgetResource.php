@@ -13,14 +13,19 @@ final class DashboardWidgetResource extends JsonResource
     {
         if ($this->resource instanceof WidgetContainer) {
             return [
-                ...$this->definition($this->resource->definition),
-                'status' => $this->resource->status,
-                'data' => $this->resource->data,
-                'error' => $this->resource->error,
+                'data' => [
+                    ...$this->definition($this->resource->definition),
+                    'status' => $this->resource->status,
+                    'data' => $this->resource->data,
+                    'error' => $this->resource->error,
+                    'meta' => $this->resource->meta,
+                ],
             ];
         }
 
-        return $this->definition($this->resource);
+        return [
+            'data' => $this->definition($this->resource),
+        ];
     }
 
     public function with(Request $request): array
@@ -40,6 +45,10 @@ final class DashboardWidgetResource extends JsonResource
             'category' => $definition->category,
             'size' => $definition->size,
             'refresh_seconds' => $definition->refreshSeconds,
+            'component' => $definition->component,
+            'required_permission' => $definition->requiredPermission,
+            'data_source' => $definition->dataSource,
+            'allowed_roles' => $definition->allowedRoles,
         ];
     }
 }

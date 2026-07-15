@@ -3,25 +3,24 @@
 namespace Dashboard\Services;
 
 use Dashboard\Engines\DashboardEngine;
+use Dashboard\Exceptions\DashboardCacheException;
+use Dashboard\Exceptions\WidgetNotFoundException;
 use Dashboard\Repositories\Contracts\DashboardRepositoryInterface;
 use Dashboard\Widgets\Support\WidgetContainer;
 use Dashboard\Widgets\Support\WidgetDefinition;
 use Dashboard\Widgets\WidgetRegistry;
 use Dashboard\Workspaces\DashboardWorkspace;
 use Dashboard\Workspaces\DashboardWorkspaceResolver;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 final class DashboardService
 {
-    private const CACHE_TTL_SECONDS = 60;
-    private const CACHE_INDEX_KEY = 'dashboard:cache_keys';
-
     public function __construct(
         private DashboardRepositoryInterface $repository,
         private DashboardEngine $dashboardEngine,
         private WidgetRegistry $widgetRegistry,
-        private DashboardWorkspaceResolver $workspaceResolver
+        private DashboardWorkspaceResolver $workspaceResolver,
+        private DashboardCacheService $cacheService
     )
     {
     }
@@ -90,7 +89,7 @@ final class DashboardService
                 'workspace' => $workspace,
                 'items' => array_values(array_map(
                     fn ($widget): array => $this->widgetDefinitionData($widget->definition()),
-                    $this->widgetRegistry->forWorkspace($workspace)
+                    $this->widgetRegistry->visibleForWorkspace($workspace, $roleSlugs)
                 )),
             ];
         });
@@ -105,9 +104,13 @@ final class DashboardService
 
     public function refreshWidget(string $widgetKey, array $roleSlugs, array $filters): ?WidgetContainer
     {
-        $this->forgetCache(fn (string $key, string $scope): bool => $scope === 'widgets' || str_contains($scope, "widget.{$widgetKey}"));
+        $this->clearCacheSafely(fn (string $key, string $scope): bool => $scope === 'widgets' || str_contains($scope, "widget.{$widgetKey}"));
 
-        return $this->dashboardEngine->refreshWidget($this, $widgetKey, $roleSlugs, $this->perPage($filters));
+        try {
+            return $this->dashboardEngine->refreshWidget($this, $widgetKey, $roleSlugs, $this->perPage($filters));
+        } catch (WidgetNotFoundException) {
+            return null;
+        }
     }
 
     public function alerts(array $roleSlugs, array $filters): array
@@ -146,7 +149,7 @@ final class DashboardService
     public function refreshDashboard(array $roleSlugs, array $filters): array
     {
         $workspace = $filters['workspace'] ?? $this->defaultWorkspace($roleSlugs);
-        $this->forgetCache(fn (string $key, string $scope): bool => str_contains($scope, "workspace.{$workspace}") || $scope === 'home');
+        $this->clearCacheSafely();
 
         return [
             'data' => [
@@ -162,14 +165,8 @@ final class DashboardService
 
     public function cacheStatus(): array
     {
-        $keys = Cache::get(self::CACHE_INDEX_KEY, []);
-
         return [
-            'data' => [
-                'enabled' => true,
-                'ttl_seconds' => self::CACHE_TTL_SECONDS,
-                'tracked_keys' => count($keys),
-            ],
+            'data' => $this->cacheStatusSafely(),
             'message' => 'Dashboard cache status retrieved.',
             'meta' => [
                 'cache_status' => 'live',
@@ -179,7 +176,7 @@ final class DashboardService
 
     public function clearCache(): array
     {
-        $this->forgetCache();
+        $this->clearCacheSafely();
 
         return [
             'data' => [
@@ -228,18 +225,28 @@ final class DashboardService
     private function cachedResponse(string $scope, array $roleSlugs, array $filters, callable $callback): array
     {
         $startedAt = microtime(true);
-        $key = $this->cacheKey($scope, $roleSlugs, $filters);
-        $cacheHit = Cache::has($key);
-        $data = Cache::remember($key, self::CACHE_TTL_SECONDS, function () use ($key, $scope, $callback): array {
-            $this->trackCacheKey($key, $scope);
+        $cacheStatus = 'miss';
+        $cacheTtlSeconds = $this->cacheService->ttlForScope($scope);
 
-            return $callback();
-        });
+        try {
+            $cacheResult = $this->cacheService->remember($scope, $roleSlugs, $filters, $callback);
+            $data = $cacheResult['data'];
+            $cacheStatus = $cacheResult['hit'] ? 'hit' : 'miss';
+            $cacheTtlSeconds = $cacheResult['ttl_seconds'];
+        } catch (DashboardCacheException $exception) {
+            Log::warning('dashboard.cache.failed', [
+                'scope' => $scope,
+                'message' => $exception->getMessage(),
+            ]);
+
+            $data = $callback();
+            $cacheStatus = 'bypass';
+        }
 
         $meta = [
-            'cache_status' => $cacheHit ? 'hit' : 'miss',
+            'cache_status' => $cacheStatus,
             'execution_time_ms' => round((microtime(true) - $startedAt) * 1000, 2),
-            'cache_ttl_seconds' => self::CACHE_TTL_SECONDS,
+            'cache_ttl_seconds' => $cacheTtlSeconds,
         ];
 
         Log::info('dashboard.endpoint.executed', [
@@ -255,40 +262,6 @@ final class DashboardService
             'message' => 'Success',
             'meta' => $meta,
         ];
-    }
-
-    private function cacheKey(string $scope, array $roleSlugs, array $filters): string
-    {
-        ksort($filters);
-        sort($roleSlugs);
-
-        return 'dashboard:api:'.sha1(json_encode([
-            'scope' => $scope,
-            'roles' => $roleSlugs,
-            'filters' => $filters,
-        ], JSON_THROW_ON_ERROR));
-    }
-
-    private function trackCacheKey(string $key, string $scope): void
-    {
-        $keys = Cache::get(self::CACHE_INDEX_KEY, []);
-        $keys[$key] = $scope;
-
-        Cache::put(self::CACHE_INDEX_KEY, $keys, self::CACHE_TTL_SECONDS);
-    }
-
-    private function forgetCache(?callable $predicate = null): void
-    {
-        $keys = Cache::get(self::CACHE_INDEX_KEY, []);
-
-        foreach ($keys as $key => $scope) {
-            if ($predicate === null || $predicate($key, $scope)) {
-                Cache::forget($key);
-                unset($keys[$key]);
-            }
-        }
-
-        Cache::put(self::CACHE_INDEX_KEY, $keys, self::CACHE_TTL_SECONDS);
     }
 
     private function workspaceData(DashboardWorkspace $workspace): array
@@ -310,6 +283,7 @@ final class DashboardService
             'status' => $container->status,
             'data' => $container->data,
             'error' => $container->error,
+            'meta' => $container->meta,
         ], $containers);
     }
 
@@ -322,7 +296,35 @@ final class DashboardService
             'category' => $definition->category,
             'size' => $definition->size,
             'refresh_seconds' => $definition->refreshSeconds,
+            'component' => $definition->component,
+            'required_permission' => $definition->requiredPermission,
+            'data_source' => $definition->dataSource,
+            'allowed_roles' => $definition->allowedRoles,
         ];
+    }
+
+    private function cacheStatusSafely(): array
+    {
+        try {
+            return $this->cacheService->status();
+        } catch (DashboardCacheException $exception) {
+            Log::warning('dashboard.cache.status_failed', ['message' => $exception->getMessage()]);
+
+            return [
+                'enabled' => false,
+                'ttl_seconds' => $this->cacheService->ttlForScope('default'),
+                'tracked_keys' => 0,
+            ];
+        }
+    }
+
+    private function clearCacheSafely(?callable $predicate = null): void
+    {
+        try {
+            $this->cacheService->forget($predicate);
+        } catch (DashboardCacheException $exception) {
+            Log::warning('dashboard.cache.clear_failed', ['message' => $exception->getMessage()]);
+        }
     }
 
     private function defaultWorkspace(array $roleSlugs): string

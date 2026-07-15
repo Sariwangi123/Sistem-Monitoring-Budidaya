@@ -51,6 +51,7 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Added Dashboard Part 2 modular architecture with Dashboard Engine, Widget Engine, Widget Registry, Widget Container, role-based workspace resolver, and read-only workspace endpoint.
 - Added Dashboard Part 3 REST API layer with role-based workspace endpoints, KPI, widget, alert, timeline, analytics, refresh, cache, export, statistics endpoints, request validation, API resources, cache integration, execution logging, and feature tests.
 - Added Dashboard Part 4 frontend Command Center workspace with role-based workspace selector, KPI bar, responsive widget grid, reusable widget container, timeline, alert center, notification panel, filter bar, manual refresh, loading, error, empty, and last-updated states.
+- Added Dashboard Part 5 engine hardening with configurable cache service, cache hit/miss metadata, user-scoped cache keys, widget permission filtering, independent widget refresh lifecycle metadata, error isolation, workspace validation, custom Dashboard exceptions, and feature tests for cache, role, permission, and refresh behavior.
 
 ## Fixed
 
@@ -151,6 +152,13 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
   - ✅ `npm run build` — TypeScript and Vite production build passed.
   - ✅ `npm run lint` — ESLint passed.
   - ✅ Vite foreground dev server started successfully at `http://127.0.0.1:5174/`; background server launch was not retained by the shell tool environment.
+- Ran Dashboard Part 5 engine verification (2026-07-15):
+  - ✅ `docker compose exec app composer dump-autoload` — 6637 classes, optimized autoload regenerated.
+  - ✅ `docker compose exec app php artisan route:list --path=api/v1/dashboard` — 21 Dashboard routes registered.
+  - ✅ PHP lint for the complete Dashboard module — passed.
+  - ✅ `docker compose exec app php artisan test` — 49 passed, 318 assertions.
+  - ✅ `npm run build` — TypeScript and Vite production build passed.
+  - ✅ `npm run lint` — ESLint passed.
 
 ## Planned
 
