@@ -3,11 +3,18 @@
 namespace ReportAnalytics\Services;
 
 use Dashboard\Services\DashboardService;
+use ReportAnalytics\Engines\UniversalReportEngine;
+use ReportAnalytics\Registry\ReportRegistry;
+use ReportAnalytics\Support\ReportDefinition;
+use ReportAnalytics\Support\ReportRequest;
 
 final class ReportAnalyticsService
 {
-    public function __construct(private DashboardService $dashboardService)
-    {
+    public function __construct(
+        private DashboardService $dashboardService,
+        private ReportRegistry $registry,
+        private UniversalReportEngine $engine
+    ) {
     }
 
     public function overview(array $roleSlugs): array
@@ -29,12 +36,17 @@ final class ReportAnalyticsService
                 'constraints' => $this->constraints(),
                 'service_layer' => $this->serviceLayer(),
                 'dashboard_reference' => $this->dashboardReference(),
+                'engine_architecture' => $this->engineArchitecture(),
+                'registered_reports' => array_map(
+                    fn (ReportDefinition $definition): array => $definition->toArray(),
+                    $this->registry->visibleForRoles($roleSlugs)
+                ),
             ],
             'message' => 'Report Analytics foundation retrieved.',
             'meta' => [
                 'read_only' => true,
                 'generate_never_store' => true,
-                'engine_status' => 'not_implemented_in_part_1',
+                'engine_status' => 'foundation_ready',
             ],
         ];
     }
@@ -63,6 +75,34 @@ final class ReportAnalyticsService
             'meta' => [
                 'read_only' => true,
                 'generate_never_store' => true,
+            ],
+        ];
+    }
+
+    public function enginePreview(array $roleSlugs): array
+    {
+        $definition = $this->registry->visibleForRoles($roleSlugs)[0] ?? null;
+
+        if (! $definition) {
+            return [
+                'data' => [
+                    'available' => false,
+                ],
+                'message' => 'No report definition available for current roles.',
+                'meta' => [
+                    'read_only' => true,
+                    'generate_never_store' => true,
+                ],
+            ];
+        }
+
+        return [
+            'data' => $this->engine->generate(new ReportRequest($definition->id)),
+            'message' => 'Report engine foundation preview generated.',
+            'meta' => [
+                'read_only' => true,
+                'generate_never_store' => true,
+                'production_export' => false,
             ],
         ];
     }
@@ -140,9 +180,9 @@ final class ReportAnalyticsService
             'No transaction deletion',
             'No permanent transaction snapshot',
             'No direct database access from controller',
-            'No export engine in Part 1',
-            'No template engine in Part 1',
-            'No queue or scheduled report in Part 1',
+            'No production export file in Part 2',
+            'No queue or scheduled report in Part 2',
+            'No frontend report workspace in Part 2',
         ];
     }
 
@@ -152,7 +192,28 @@ final class ReportAnalyticsService
         return [
             'controller' => 'ReportAnalytics\\Http\\Controllers\\ReportAnalyticsController',
             'service' => self::class,
+            'engine' => UniversalReportEngine::class,
+            'registry' => ReportRegistry::class,
             'dashboard_dependency' => $this->dashboardService::class,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function engineArchitecture(): array
+    {
+        return [
+            'universal_report_engine' => 'Foundation Ready',
+            'report_registry' => 'Foundation Ready',
+            'template_engine' => 'Foundation Ready',
+            'template_resolver' => 'Foundation Ready',
+            'report_builder' => 'Foundation Ready',
+            'report_section' => 'Foundation Ready',
+            'data_collector' => 'Service Layer Only',
+            'data_formatter' => 'Locale Aware Foundation',
+            'rendering_engine' => 'Abstraction Ready',
+            'export_engine' => 'In Memory Abstraction Only',
+            'report_layout' => 'Foundation Ready',
+            'file_naming' => 'REPORTTYPE-YYYYMMDD-HHMMSS',
         ];
     }
 

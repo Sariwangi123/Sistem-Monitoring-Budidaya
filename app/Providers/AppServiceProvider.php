@@ -103,6 +103,13 @@ use Modules\Settings\Observers\GlobalSettingObserver;
 use Modules\Users\Models\User;
 use Modules\Users\Observers\UserObserver;
 use ReportAnalytics\Policies\ReportAnalyticsPolicy;
+use ReportAnalytics\Contracts\DataCollectorInterface;
+use ReportAnalytics\Contracts\ExportEngineInterface;
+use ReportAnalytics\Contracts\RenderingEngineInterface;
+use ReportAnalytics\Collectors\ServiceLayerDataCollector;
+use ReportAnalytics\Exporters\InMemoryExportEngine;
+use ReportAnalytics\Registry\ReportRegistry;
+use ReportAnalytics\Rendering\ArrayRenderingEngine;
 use ReportAnalytics\Services\ReportAnalyticsService;
 
 final class AppServiceProvider extends ServiceProvider
@@ -126,6 +133,10 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(FinanceCostAllocationRepositoryInterface::class, FinanceCostAllocationRepository::class);
         $this->app->bind(FinanceProfitCalculationRepositoryInterface::class, FinanceProfitCalculationRepository::class);
         $this->app->bind(FinanceFinancialSummaryRepositoryInterface::class, FinanceFinancialSummaryRepository::class);
+        $this->app->singleton(ReportRegistry::class);
+        $this->app->bind(DataCollectorInterface::class, ServiceLayerDataCollector::class);
+        $this->app->bind(RenderingEngineInterface::class, ArrayRenderingEngine::class);
+        $this->app->bind(ExportEngineInterface::class, InMemoryExportEngine::class);
         $this->app->bind(ReportAnalyticsService::class);
     }
 
