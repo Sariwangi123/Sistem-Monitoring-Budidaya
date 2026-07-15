@@ -102,6 +102,8 @@ use Modules\Settings\Models\GlobalSetting;
 use Modules\Settings\Observers\GlobalSettingObserver;
 use Modules\Users\Models\User;
 use Modules\Users\Observers\UserObserver;
+use ReportAnalytics\Policies\ReportAnalyticsPolicy;
+use ReportAnalytics\Services\ReportAnalyticsService;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -124,6 +126,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(FinanceCostAllocationRepositoryInterface::class, FinanceCostAllocationRepository::class);
         $this->app->bind(FinanceProfitCalculationRepositoryInterface::class, FinanceProfitCalculationRepository::class);
         $this->app->bind(FinanceFinancialSummaryRepositoryInterface::class, FinanceFinancialSummaryRepository::class);
+        $this->app->bind(ReportAnalyticsService::class);
     }
 
     public function boot(): void
@@ -173,6 +176,7 @@ final class AppServiceProvider extends ServiceProvider
         Gate::policy(FinanceFinancialSummary::class, FinanceFinancialSummaryPolicy::class);
         Gate::define('view-dashboard', [DashboardPolicy::class, 'view']);
         Gate::define('clear-dashboard-cache', [DashboardPolicy::class, 'clearCache']);
+        Gate::define('view-reports', [ReportAnalyticsPolicy::class, 'view']);
 
         Gate::before(function (User $user): ?bool {
             return $user->roles()->where('slug', 'super-admin')->exists() ? true : null;

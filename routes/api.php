@@ -11,6 +11,7 @@ use Modules\Auth\Routes\AuthRoutes;
 use Modules\Notifications\Routes\NotificationRoutes;
 use Modules\Settings\Routes\SettingRoutes;
 use Modules\Users\Routes\UserRoutes;
+use ReportAnalytics\Routes\ReportAnalyticsRoutes;
 use Warehouse\Routes\WarehouseRoutes;
 
 Route::prefix('v1')->group(function (): void {
@@ -24,6 +25,7 @@ Route::prefix('v1')->group(function (): void {
         FinanceRoutes::register();
         WarehouseRoutes::register();
         DashboardRoutes::register();
+        ReportAnalyticsRoutes::register();
         UserRoutes::register();
         SettingRoutes::register();
         NotificationRoutes::register();

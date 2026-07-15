@@ -26,6 +26,7 @@
       "CultureCycle\\": "CultureCycle/",
       "Activities\\": "Activities/",
       "Dashboard\\": "Dashboard/",
+      "ReportAnalytics\\": "ReportAnalytics/",
       "Harvest\\": "Harvest/",
       "Finance\\": "Finance/",
       "Warehouse\\": "Warehouse/",
