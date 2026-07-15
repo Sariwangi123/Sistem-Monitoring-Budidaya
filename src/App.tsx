@@ -1,10 +1,14 @@
+import { lazy, Suspense } from 'react';
 import { AppLayout } from './layouts/AppLayout';
-import { DashboardPage } from './pages/DashboardPage';
+
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then((module) => ({ default: module.DashboardPage })));
 
 export function App() {
   return (
     <AppLayout>
-      <DashboardPage />
+      <Suspense fallback={<div className="h-40 animate-pulse rounded-md border border-slate-200 bg-white" />}>
+        <DashboardPage />
+      </Suspense>
     </AppLayout>
   );
 }

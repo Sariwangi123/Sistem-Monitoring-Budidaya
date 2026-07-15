@@ -9,6 +9,11 @@ export type AuthUser = {
   uuid: string;
   name: string;
   email: string;
+  roles?: Array<{
+    id?: number;
+    name?: string;
+    slug: string;
+  }>;
 };
 
 export type AuthSession = {

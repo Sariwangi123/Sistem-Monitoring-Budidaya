@@ -5,7 +5,7 @@ type FormFieldProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 export function FormField({ label, id, ...props }: FormFieldProps) {
-  const inputId = id ?? label.toLowerCase().replaceAll(' ', '-');
+  const inputId = id ?? label.toLowerCase().replace(/\s+/g, '-');
 
   return (
     <label className="block text-sm font-medium text-slate-700" htmlFor={inputId}>
