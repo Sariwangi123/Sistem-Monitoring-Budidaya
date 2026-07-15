@@ -105,6 +105,57 @@ export type DashboardAnalyticsResponse = {
   summary: Record<string, unknown>;
   trend: unknown[];
   comparison: unknown[];
+  insights?: DashboardInsightCard[];
+  recommendations?: DashboardRecommendation[];
+  health?: Record<string, DashboardHealthSummary>;
+};
+
+export type DashboardHealthSummary = {
+  label: string;
+  score: number;
+  status: string;
+  source: string;
+  signal_count: number;
+};
+
+export type DashboardInsightCard = {
+  key: string;
+  title: string;
+  description: string;
+  tone: 'neutral' | 'good' | 'warning' | 'danger';
+};
+
+export type DashboardRecommendation = {
+  key: string;
+  title: string;
+  source: string;
+  priority: 'Critical' | 'Warning' | 'Information' | string;
+  description: string;
+  action: string;
+  mode: 'rule_based' | string;
+};
+
+export type DashboardIntelligenceResponse = {
+  operational_summary: Record<string, unknown>;
+  kpi_intelligence: {
+    items: DashboardKpiItem[];
+    trend: unknown[];
+    comparison: unknown[];
+  };
+  trend_indicators: unknown[];
+  comparative_indicators: Record<string, unknown>;
+  insight_cards: DashboardInsightCard[];
+  recommendations: DashboardRecommendation[];
+  farm_health_summary: DashboardHealthSummary;
+  pond_health_summary: DashboardHealthSummary;
+  financial_health_summary: DashboardHealthSummary;
+  inventory_health_summary: DashboardHealthSummary;
+  production_health_summary: DashboardHealthSummary;
+  meta: {
+    mode: 'rule_based' | string;
+    read_only: boolean;
+    roles: string[];
+  };
 };
 
 export type DashboardCacheStatus = {

@@ -7,6 +7,7 @@ import type {
   DashboardExportResult,
   DashboardFilters,
   DashboardHome,
+  DashboardIntelligenceResponse,
   DashboardKpiResponse,
   DashboardRefreshResult,
   DashboardStatistics,
@@ -69,6 +70,10 @@ export const dashboardService = {
 
   analytics(filters: DashboardFilters) {
     return apiClient<DashboardAnalyticsResponse>(`/dashboard/analytics${queryString(filters)}`);
+  },
+
+  intelligence(filters: DashboardFilters) {
+    return apiClient<DashboardIntelligenceResponse>(`/dashboard/intelligence${queryString(filters)}`);
   },
 
   refresh(filters: DashboardFilters) {

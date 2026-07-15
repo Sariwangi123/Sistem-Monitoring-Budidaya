@@ -39,6 +39,7 @@ final class DashboardApiTest extends TestCase
             '/alerts',
             '/timeline',
             '/analytics',
+            '/intelligence',
             '/cache/status',
             '/statistics',
             '/export?format=csv',
@@ -138,6 +139,40 @@ final class DashboardApiTest extends TestCase
 
         $this->postJson(self::API_PREFIX.'/widgets/missing-widget/refresh')
             ->assertNotFound();
+    }
+
+    public function test_operational_intelligence_returns_rule_based_summary_and_recommendations(): void
+    {
+        $this->authenticateAs('super-admin');
+
+        $this->getJson(self::API_PREFIX.'/intelligence')
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.meta.mode', 'rule_based')
+            ->assertJsonPath('data.meta.read_only', true)
+            ->assertJsonStructure([
+                'data' => [
+                    'operational_summary',
+                    'kpi_intelligence' => ['items', 'trend', 'comparison'],
+                    'trend_indicators',
+                    'comparative_indicators',
+                    'insight_cards',
+                    'recommendations',
+                    'farm_health_summary',
+                    'pond_health_summary',
+                    'financial_health_summary',
+                    'inventory_health_summary',
+                    'production_health_summary',
+                ],
+            ]);
+
+        $this->getJson(self::API_PREFIX.'/kpi')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.key', 'active_cycles');
+
+        $this->getJson(self::API_PREFIX.'/alerts')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.status', 'Open');
     }
 
     private function authenticateAs(string $roleSlug): void

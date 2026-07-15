@@ -12,6 +12,7 @@ const dashboardKeys = {
   alerts: (filters: DashboardFilters) => [...dashboardKeys.all, 'alerts', filters] as const,
   timeline: (filters: DashboardFilters) => [...dashboardKeys.all, 'timeline', filters] as const,
   analytics: (filters: DashboardFilters) => [...dashboardKeys.all, 'analytics', filters] as const,
+  intelligence: (filters: DashboardFilters) => [...dashboardKeys.all, 'intelligence', filters] as const,
   cacheStatus: () => [...dashboardKeys.all, 'cache-status'] as const,
   statistics: () => [...dashboardKeys.all, 'statistics'] as const,
 };
@@ -68,6 +69,14 @@ export function useDashboardAnalytics(filters: DashboardFilters) {
   return useQuery({
     queryKey: dashboardKeys.analytics(filters),
     queryFn: () => dashboardService.analytics(filters),
+    staleTime: 30_000,
+  });
+}
+
+export function useDashboardIntelligence(filters: DashboardFilters) {
+  return useQuery({
+    queryKey: dashboardKeys.intelligence(filters),
+    queryFn: () => dashboardService.intelligence(filters),
     staleTime: 30_000,
   });
 }

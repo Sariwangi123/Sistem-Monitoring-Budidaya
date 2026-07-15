@@ -26,6 +26,7 @@ final class DashboardRoutes
             Route::get('alerts', [DashboardController::class, 'alerts']);
             Route::get('timeline', [DashboardController::class, 'timeline']);
             Route::get('analytics', [DashboardController::class, 'analytics']);
+            Route::get('intelligence', [DashboardController::class, 'intelligence']);
             Route::post('refresh', [DashboardController::class, 'refresh']);
             Route::get('cache/status', [DashboardController::class, 'cacheStatus']);
             Route::delete('cache', [DashboardController::class, 'clearCache']);

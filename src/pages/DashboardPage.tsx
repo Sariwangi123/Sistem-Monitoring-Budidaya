@@ -6,6 +6,7 @@ import { DashboardFilterBar } from '../features/dashboard/components/DashboardFi
 import { ErrorState } from '../features/dashboard/components/DashboardStates';
 import { KpiBar } from '../features/dashboard/components/KpiBar';
 import { NotificationPanel } from '../features/dashboard/components/NotificationPanel';
+import { OperationalIntelligencePanel } from '../features/dashboard/components/OperationalIntelligencePanel';
 import { TimelinePanel } from '../features/dashboard/components/TimelinePanel';
 import { WidgetGrid } from '../features/dashboard/components/WidgetGrid';
 import { WorkspaceSelector } from '../features/dashboard/components/WorkspaceSelector';
@@ -14,6 +15,7 @@ import {
   useDashboardAlerts,
   useDashboardCacheStatus,
   useDashboardHome,
+  useDashboardIntelligence,
   useDashboardKpi,
   useDashboardStatistics,
   useDashboardTimeline,
@@ -50,6 +52,7 @@ export function DashboardPage() {
   const homeQuery = useDashboardHome(activeFilters);
   const workspaceQuery = useDashboardWorkspace(activeWorkspace, activeFilters);
   const kpiQuery = useDashboardKpi(activeFilters);
+  const intelligenceQuery = useDashboardIntelligence(activeFilters);
   const alertsQuery = useDashboardAlerts(activeFilters);
   const timelineQuery = useDashboardTimeline(activeFilters);
   const cacheQuery = useDashboardCacheStatus();
@@ -67,10 +70,24 @@ export function DashboardPage() {
   }, [activeWorkspace, availableWorkspaces]);
 
   useEffect(() => {
-    if (workspaceQuery.isSuccess || kpiQuery.isSuccess || alertsQuery.isSuccess || timelineQuery.isSuccess || homeQuery.isSuccess) {
+    if (
+      workspaceQuery.isSuccess ||
+      kpiQuery.isSuccess ||
+      intelligenceQuery.isSuccess ||
+      alertsQuery.isSuccess ||
+      timelineQuery.isSuccess ||
+      homeQuery.isSuccess
+    ) {
       setLastUpdated(new Date());
     }
-  }, [alertsQuery.isSuccess, homeQuery.isSuccess, kpiQuery.isSuccess, timelineQuery.isSuccess, workspaceQuery.isSuccess]);
+  }, [
+    alertsQuery.isSuccess,
+    homeQuery.isSuccess,
+    intelligenceQuery.isSuccess,
+    kpiQuery.isSuccess,
+    timelineQuery.isSuccess,
+    workspaceQuery.isSuccess,
+  ]);
 
   const workspaceWidgets = workspaceQuery.data?.data.widgets ?? homeQuery.data?.data.widgets ?? [];
   const hasPageError = workspaceQuery.isError && kpiQuery.isError;
@@ -166,6 +183,8 @@ export function DashboardPage() {
       {hasPageError ? <ErrorState message="Dashboard data could not be loaded." /> : null}
 
       <KpiBar items={kpiQuery.data?.data.items} loading={kpiQuery.isLoading} />
+
+      <OperationalIntelligencePanel data={intelligenceQuery.data?.data} loading={intelligenceQuery.isLoading} />
 
       <WidgetGrid
         lastUpdated={lastUpdated}

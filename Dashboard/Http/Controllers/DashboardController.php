@@ -128,6 +128,13 @@ final class DashboardController extends Controller
         return new DashboardApiResource($this->service->analytics($this->roleSlugs($request), $this->validatedWithActor($request)));
     }
 
+    public function intelligence(DashboardQueryRequest $request): JsonResource
+    {
+        $this->authorizeDashboard($request, $request->validated('workspace'));
+
+        return new DashboardApiResource($this->service->intelligence($this->roleSlugs($request), $this->validatedWithActor($request)));
+    }
+
     public function refresh(DashboardRefreshRequest $request): JsonResource
     {
         $this->authorizeDashboard($request, $request->validated('workspace'));

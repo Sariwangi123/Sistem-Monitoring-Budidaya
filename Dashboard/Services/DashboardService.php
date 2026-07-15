@@ -20,7 +20,8 @@ final class DashboardService
         private DashboardEngine $dashboardEngine,
         private WidgetRegistry $widgetRegistry,
         private DashboardWorkspaceResolver $workspaceResolver,
-        private DashboardCacheService $cacheService
+        private DashboardCacheService $cacheService,
+        private DashboardOperationalIntelligenceService $intelligenceService
     )
     {
     }
@@ -55,8 +56,9 @@ final class DashboardService
             return [
                 'workspace' => $this->workspaceData($workspace),
                 'widgets' => $this->widgetContainersData($workspace->containers),
-                'kpi' => [],
-                'alerts' => [],
+                'kpi' => $this->intelligenceService->kpiItems($roleSlugs, $filters),
+                'alerts' => $this->intelligenceService->alerts($roleSlugs, $filters),
+                'intelligence' => $this->intelligenceService->build($roleSlugs, $filters),
             ];
         });
     }
@@ -72,12 +74,16 @@ final class DashboardService
 
     public function kpi(array $roleSlugs, array $filters): array
     {
-        return $this->cachedResponse('kpi', $roleSlugs, $filters, fn (): array => [
-            'workspace' => $filters['workspace'] ?? $this->defaultWorkspace($roleSlugs),
-            'items' => [],
-            'trend' => [],
-            'comparison' => [],
-        ]);
+        return $this->cachedResponse('kpi', $roleSlugs, $filters, function () use ($roleSlugs, $filters): array {
+            $intelligence = $this->intelligenceService->build($roleSlugs, $filters);
+
+            return [
+                'workspace' => $filters['workspace'] ?? $this->defaultWorkspace($roleSlugs),
+                'items' => $intelligence['kpi_intelligence']['items'],
+                'trend' => $intelligence['trend_indicators'],
+                'comparison' => $intelligence['comparative_indicators'],
+            ];
+        });
     }
 
     public function widgets(array $roleSlugs, array $filters): array
@@ -116,8 +122,8 @@ final class DashboardService
     public function alerts(array $roleSlugs, array $filters): array
     {
         return $this->cachedResponse('alerts', $roleSlugs, $filters, fn (): array => [
-            'items' => [],
-            'priority' => [],
+            'items' => $this->intelligenceService->alerts($roleSlugs, $filters),
+            'priority' => ['Critical', 'Warning', 'Information'],
             'status' => [
                 'unread_only' => (bool) ($filters['unread_only'] ?? false),
                 'severity' => $filters['severity'] ?? null,
@@ -138,12 +144,35 @@ final class DashboardService
 
     public function analytics(array $roleSlugs, array $filters): array
     {
-        return $this->cachedResponse('analytics', $roleSlugs, $filters, fn (): array => [
-            'workspace' => $filters['workspace'] ?? $this->defaultWorkspace($roleSlugs),
-            'summary' => [],
-            'trend' => [],
-            'comparison' => [],
-        ]);
+        return $this->cachedResponse('analytics', $roleSlugs, $filters, function () use ($roleSlugs, $filters): array {
+            $intelligence = $this->intelligenceService->build($roleSlugs, $filters);
+
+            return [
+                'workspace' => $filters['workspace'] ?? $this->defaultWorkspace($roleSlugs),
+                'summary' => $intelligence['operational_summary'],
+                'trend' => $intelligence['trend_indicators'],
+                'comparison' => $intelligence['comparative_indicators'],
+                'insights' => $intelligence['insight_cards'],
+                'recommendations' => $intelligence['recommendations'],
+                'health' => [
+                    'farm' => $intelligence['farm_health_summary'],
+                    'pond' => $intelligence['pond_health_summary'],
+                    'financial' => $intelligence['financial_health_summary'],
+                    'inventory' => $intelligence['inventory_health_summary'],
+                    'production' => $intelligence['production_health_summary'],
+                ],
+            ];
+        });
+    }
+
+    public function intelligence(array $roleSlugs, array $filters): array
+    {
+        return $this->cachedResponse(
+            'intelligence',
+            $roleSlugs,
+            $filters,
+            fn (): array => $this->intelligenceService->build($roleSlugs, $filters)
+        );
     }
 
     public function refreshDashboard(array $roleSlugs, array $filters): array
