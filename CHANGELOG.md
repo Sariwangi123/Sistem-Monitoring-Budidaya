@@ -49,6 +49,7 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Added Finance feature and unit tests for API CRUD, operational resource creation, validation, authentication, posting workflows, journal balance validation, ledger immutability, profit calculation, and financial summary workflows.
 - Added Dashboard Part 1 read-only backend foundation with a service-backed operational snapshot endpoint, repository contract and binding, API resource, controller, and route registration.
 - Added Dashboard Part 2 modular architecture with Dashboard Engine, Widget Engine, Widget Registry, Widget Container, role-based workspace resolver, and read-only workspace endpoint.
+- Added Dashboard Part 3 REST API layer with role-based workspace endpoints, KPI, widget, alert, timeline, analytics, refresh, cache, export, statistics endpoints, request validation, API resources, cache integration, execution logging, and feature tests.
 
 ## Fixed
 
@@ -139,6 +140,11 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
   - ✅ PHP lint for the complete Dashboard module — passed.
   - ✅ Role-based workspace engine resolved the Executive workspace for the `farm-owner` role with an empty widget registry.
   - ✅ `docker compose exec app php artisan route:list --path=api/v1/dashboard` — 2 Dashboard routes registered.
+- Ran Dashboard Part 3 REST API verification (2026-07-15):
+  - ✅ `docker compose exec app composer dump-autoload` — 6631 classes, optimized autoload regenerated.
+  - ✅ PHP lint for the complete Dashboard module — passed.
+  - ✅ `docker compose exec app php artisan route:list --path=api/v1/dashboard` — 21 Dashboard routes registered.
+  - ✅ `docker compose exec app php artisan test` — 46 passed, 298 assertions.
 
 ## Planned
 

@@ -11,23 +11,27 @@ final class DashboardWorkspaceResolver
         'inventory' => 'Inventory',
         'harvest' => 'Harvest',
         'finance' => 'Finance',
-        'administration' => 'Administration',
+        'system' => 'System',
+        'administration' => 'System',
     ];
 
-    /** @var array<string, string> */
+    /** @var array<string, array<int, string>> */
     private const ROLE_WORKSPACES = [
-        'super-admin' => 'administration',
-        'farm-owner' => 'executive',
-        'director' => 'executive',
-        'farm-manager' => 'production',
-        'warehouse-staff' => 'inventory',
-        'finance-staff' => 'finance',
-        'technician' => 'production',
+        'super-admin' => ['executive', 'production', 'inventory', 'harvest', 'finance', 'system'],
+        'farm-owner' => ['executive', 'production', 'harvest', 'finance'],
+        'director' => ['executive', 'production', 'harvest', 'finance'],
+        'farm-manager' => ['production', 'harvest', 'inventory'],
+        'warehouse-staff' => ['inventory'],
+        'finance-staff' => ['finance'],
+        'technician' => ['production', 'harvest'],
+        'viewer' => ['executive'],
     ];
 
     public function resolve(array $roleSlugs, ?string $requestedWorkspace = null): WorkspaceDefinition
     {
         $allowedWorkspaces = $this->workspacesForRoles($roleSlugs);
+
+        $requestedWorkspace = $requestedWorkspace ? $this->normalizeWorkspace($requestedWorkspace) : null;
 
         if ($requestedWorkspace && in_array($requestedWorkspace, $allowedWorkspaces, true)) {
             return $this->definition($requestedWorkspace);
@@ -37,18 +41,24 @@ final class DashboardWorkspaceResolver
     }
 
     /** @return array<int, string> */
-    private function workspacesForRoles(array $roleSlugs): array
+    public function workspacesForRoles(array $roleSlugs): array
     {
-        $workspaces = array_values(array_unique(array_filter(array_map(
-            fn (string $roleSlug): ?string => self::ROLE_WORKSPACES[$roleSlug] ?? null,
-            $roleSlugs
-        ))));
+        $workspaces = [];
 
-        return $workspaces ?: ['executive'];
+        foreach ($roleSlugs as $roleSlug) {
+            $workspaces = [...$workspaces, ...(self::ROLE_WORKSPACES[$roleSlug] ?? [])];
+        }
+
+        return array_values(array_unique($workspaces ?: ['executive']));
     }
 
     private function definition(string $workspace): WorkspaceDefinition
     {
         return new WorkspaceDefinition($workspace, self::WORKSPACE_TITLES[$workspace]);
+    }
+
+    private function normalizeWorkspace(string $workspace): string
+    {
+        return $workspace === 'administration' ? 'system' : $workspace;
     }
 }

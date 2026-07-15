@@ -3,6 +3,7 @@
 namespace Dashboard\Engines;
 
 use Dashboard\Services\DashboardService;
+use Dashboard\Widgets\Support\WidgetContainer;
 use Dashboard\Workspaces\DashboardWorkspace;
 use Dashboard\Workspaces\DashboardWorkspaceResolver;
 
@@ -26,5 +27,14 @@ final class DashboardEngine
             $workspace,
             $this->widgetEngine->load($workspace->key, $roleSlugs, $perPage, $dashboardService)
         );
+    }
+
+    public function refreshWidget(
+        DashboardService $dashboardService,
+        string $widgetKey,
+        array $roleSlugs,
+        int $perPage
+    ): ?WidgetContainer {
+        return $this->widgetEngine->refresh($widgetKey, $roleSlugs, $perPage, $dashboardService);
     }
 }

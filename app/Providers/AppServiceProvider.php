@@ -26,6 +26,7 @@ use MasterData\Models\Unit;
 use MasterData\Models\Vitamin;
 use CultureCycle\Models\CultureCycle;
 use CultureCycle\Policies\CultureCyclePolicy;
+use Dashboard\Policies\DashboardPolicy;
 use Dashboard\Repositories\Contracts\DashboardRepositoryInterface;
 use Dashboard\Repositories\DashboardRepository;
 use Dashboard\Widgets\WidgetRegistry;
@@ -170,6 +171,8 @@ final class AppServiceProvider extends ServiceProvider
         Gate::policy(FinanceCostAllocation::class, FinanceCostAllocationPolicy::class);
         Gate::policy(FinanceProfitCalculation::class, FinanceProfitCalculationPolicy::class);
         Gate::policy(FinanceFinancialSummary::class, FinanceFinancialSummaryPolicy::class);
+        Gate::define('view-dashboard', [DashboardPolicy::class, 'view']);
+        Gate::define('clear-dashboard-cache', [DashboardPolicy::class, 'clearCache']);
 
         Gate::before(function (User $user): ?bool {
             return $user->roles()->where('slug', 'super-admin')->exists() ? true : null;

@@ -22,6 +22,17 @@ final class WidgetRegistry
     }
 
     /** @return array<string, DashboardWidgetInterface> */
+    public function all(): array
+    {
+        return $this->widgets;
+    }
+
+    public function find(string $key): ?DashboardWidgetInterface
+    {
+        return $this->widgets[$key] ?? null;
+    }
+
+    /** @return array<string, DashboardWidgetInterface> */
     public function forWorkspace(string $workspace): array
     {
         return array_filter(

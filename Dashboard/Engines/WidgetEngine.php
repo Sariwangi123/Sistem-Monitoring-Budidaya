@@ -38,4 +38,30 @@ final class WidgetEngine
 
         return $containers;
     }
+
+    public function refresh(string $widgetKey, array $roleSlugs, int $perPage, DashboardService $dashboardService): ?WidgetContainer
+    {
+        $widget = $this->registry->find($widgetKey);
+
+        if (! $widget) {
+            return null;
+        }
+
+        $context = new DashboardWidgetContext($widget->definition()->workspace, $roleSlugs, $perPage);
+
+        try {
+            return new WidgetContainer(
+                $widget->definition(),
+                'Loaded',
+                $widget->load($dashboardService, $context)
+            );
+        } catch (Throwable) {
+            return new WidgetContainer(
+                $widget->definition(),
+                'Error',
+                [],
+                'Widget data could not be loaded.'
+            );
+        }
+    }
 }
