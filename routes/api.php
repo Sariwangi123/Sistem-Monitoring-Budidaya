@@ -2,6 +2,7 @@
 
 use Activities\Routes\ActivitiesRoutes;
 use CultureCycle\Routes\CultureCycleRoutes;
+use Dashboard\Routes\DashboardRoutes;
 use Finance\Routes\FinanceRoutes;
 use Harvest\Routes\HarvestRoutes;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,7 @@ Route::prefix('v1')->group(function (): void {
         HarvestRoutes::register();
         FinanceRoutes::register();
         WarehouseRoutes::register();
+        DashboardRoutes::register();
         UserRoutes::register();
         SettingRoutes::register();
         NotificationRoutes::register();

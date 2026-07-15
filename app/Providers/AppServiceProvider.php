@@ -26,6 +26,9 @@ use MasterData\Models\Unit;
 use MasterData\Models\Vitamin;
 use CultureCycle\Models\CultureCycle;
 use CultureCycle\Policies\CultureCyclePolicy;
+use Dashboard\Repositories\Contracts\DashboardRepositoryInterface;
+use Dashboard\Repositories\DashboardRepository;
+use Dashboard\Widgets\WidgetRegistry;
 use Finance\Models\FinanceCostAllocation;
 use Finance\Models\FinanceCostCenter;
 use Finance\Models\FinanceExpense;
@@ -103,6 +106,8 @@ final class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(WidgetRegistry::class);
+        $this->app->bind(DashboardRepositoryInterface::class, DashboardRepository::class);
         $this->app->bind(HarvestRepositoryInterface::class, HarvestRepository::class);
         $this->app->bind(HarvestBatchRepositoryInterface::class, HarvestBatchRepository::class);
         $this->app->bind(HarvestQualityControlRepositoryInterface::class, HarvestQualityControlRepository::class);

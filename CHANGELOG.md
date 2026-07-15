@@ -47,6 +47,8 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Added Finance service layer with transactional create/update operations, financial workflow status transitions (Draft→Validated→Posted→Completed→Closed→Locked), ledger posting engine (Expense and Revenue auto-generate Journal, Ledger, and Journal Entries on posting), journal balance validation, ledger immutability guard, cost center and financial period validation, profit calculation engine (Cost of Production, Gross Profit, Net Profit, Cost per KG), and financial summary aggregation.
 - Added Finance API layer with form requests, API resources, thin service-backed controllers, route registration, and policies for cost centers, expenses, revenues, journals, ledgers, journal entries, cost allocations, profit calculations, and financial summaries.
 - Added Finance feature and unit tests for API CRUD, operational resource creation, validation, authentication, posting workflows, journal balance validation, ledger immutability, profit calculation, and financial summary workflows.
+- Added Dashboard Part 1 read-only backend foundation with a service-backed operational snapshot endpoint, repository contract and binding, API resource, controller, and route registration.
+- Added Dashboard Part 2 modular architecture with Dashboard Engine, Widget Engine, Widget Registry, Widget Container, role-based workspace resolver, and read-only workspace endpoint.
 
 ## Fixed
 
@@ -127,6 +129,16 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
   - ✅ `docker compose exec app php artisan about` — Laravel 12.63.0, PHP 8.4.23, PostgreSQL.
   - ✅ `docker compose exec app php artisan migrate:status` — all 63 migrations Ran.
   - 🏁 **Finance module — ✅ Completed**
+- Ran Dashboard Part 1 foundation verification (2026-07-15):
+  - ✅ `docker compose exec app composer dump-autoload` — 6613 classes, optimized autoload regenerated.
+  - ✅ PHP lint for Dashboard contract, repository, service, resource, controller, and routes — passed.
+  - ✅ Dashboard service container binding — resolved after Laravel bootstrap.
+  - ✅ `docker compose exec app php artisan route:list` — 330 routes registered, including `GET api/v1/dashboard`.
+- Ran Dashboard Part 2 architecture verification (2026-07-15):
+  - ✅ `docker compose exec app composer dump-autoload` — 6624 classes, optimized autoload regenerated.
+  - ✅ PHP lint for the complete Dashboard module — passed.
+  - ✅ Role-based workspace engine resolved the Executive workspace for the `farm-owner` role with an empty widget registry.
+  - ✅ `docker compose exec app php artisan route:list --path=api/v1/dashboard` — 2 Dashboard routes registered.
 
 ## Planned
 
