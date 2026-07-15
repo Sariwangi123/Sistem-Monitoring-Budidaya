@@ -26,6 +26,14 @@ final class ReportAnalyticsRoutes
             Route::get('historical', [ReportAnalyticsController::class, 'historical']);
             Route::get('comparative', [ReportAnalyticsController::class, 'comparative']);
             Route::get('analytics', [ReportAnalyticsController::class, 'analytics']);
+            Route::get('business-intelligence', [ReportAnalyticsController::class, 'businessIntelligence']);
+            Route::get('executive-analytics', [ReportAnalyticsController::class, 'executiveAnalytics']);
+            Route::get('trend-analysis', [ReportAnalyticsController::class, 'trendAnalysis']);
+            Route::get('comparative-analysis', [ReportAnalyticsController::class, 'comparativeAnalysis']);
+            Route::get('kpi-analytics', [ReportAnalyticsController::class, 'kpiAnalytics']);
+            Route::get('executive-scorecard', [ReportAnalyticsController::class, 'executiveScorecard']);
+            Route::get('benchmark-analysis', [ReportAnalyticsController::class, 'benchmarkAnalysis']);
+            Route::get('decision-support-insights', [ReportAnalyticsController::class, 'decisionSupportInsights']);
             Route::post('generate', [ReportAnalyticsController::class, 'generate']);
             Route::get('export/{report}', [ReportAnalyticsController::class, 'export']);
             Route::get('schedules', [ReportAnalyticsController::class, 'schedules']);

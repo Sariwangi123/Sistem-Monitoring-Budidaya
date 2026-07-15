@@ -112,6 +112,43 @@ final class ReportAnalyticsApiTest extends TestCase
             ->assertJsonPath('data.production_scheduler', false);
     }
 
+    public function test_report_analytics_business_intelligence_endpoints_are_read_only(): void
+    {
+        $this->authenticateAs('super-admin');
+
+        foreach ([
+            '/business-intelligence',
+            '/executive-analytics',
+            '/trend-analysis',
+            '/comparative-analysis',
+            '/kpi-analytics',
+            '/executive-scorecard',
+            '/benchmark-analysis',
+            '/decision-support-insights',
+        ] as $endpoint) {
+            $response = $this->getJson(self::API_PREFIX.$endpoint.'?period=monthly')
+                ->assertOk()
+                ->assertJsonPath('success', true)
+                ->assertJsonPath('data.read_only', true)
+                ->assertJsonPath('meta.read_only', true);
+
+            $this->assertSame(false, $response->json('data.uses_ai'), $endpoint.' '.json_encode($response->json()));
+            $this->assertSame(false, $response->json('data.uses_machine_learning'), $endpoint);
+            $this->assertSame(false, $response->json('data.uses_llm'), $endpoint);
+        }
+
+        $this->getJson(self::API_PREFIX.'/executive-scorecard')
+            ->assertOk()
+            ->assertJsonPath('data.data.rule_based', true)
+            ->assertJsonPath('data.data.uses_ai', false)
+            ->assertJsonPath('data.data.overall_score', 85);
+
+        $this->getJson(self::API_PREFIX.'/decision-support-insights')
+            ->assertOk()
+            ->assertJsonPath('data.data.uses_ai', false)
+            ->assertJsonPath('data.data.uses_forecast', false);
+    }
+
     public function test_report_analytics_filters_audit_category_by_role(): void
     {
         $this->authenticateAs('finance-staff');

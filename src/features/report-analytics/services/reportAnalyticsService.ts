@@ -2,6 +2,11 @@ import { apiClient } from '../../../services/apiClient';
 import type {
   ReportCategoryKey,
   ReportCategoryResponse,
+  BenchmarkAnalysis,
+  DecisionSupportInsights,
+  ExecutiveScorecard,
+  KpiAnalytics,
+  ReportBiEnvelope,
   ReportExportMetadata,
   ReportFilters,
   ReportGeneratedResponse,
@@ -12,6 +17,7 @@ import type {
   ReportScheduleItem,
   ReportSchedulePayload,
   ReportSchedulesResponse,
+  TrendAnalysis,
 } from '../types/reportAnalytics';
 
 function queryString(filters: ReportFilters = {}) {
@@ -69,5 +75,25 @@ export const reportAnalyticsService = {
     return apiClient<ReportScheduleDeleteResponse>(`/reports/schedules/${uuid}`, {
       method: 'DELETE',
     });
+  },
+
+  executiveScorecard(filters: ReportFilters) {
+    return apiClient<ReportBiEnvelope<ExecutiveScorecard>>(`/reports/executive-scorecard${queryString(filters)}`);
+  },
+
+  trendAnalysis(filters: ReportFilters) {
+    return apiClient<ReportBiEnvelope<TrendAnalysis>>(`/reports/trend-analysis${queryString(filters)}`);
+  },
+
+  kpiAnalytics(filters: ReportFilters) {
+    return apiClient<ReportBiEnvelope<KpiAnalytics>>(`/reports/kpi-analytics${queryString(filters)}`);
+  },
+
+  benchmarkAnalysis(filters: ReportFilters) {
+    return apiClient<ReportBiEnvelope<BenchmarkAnalysis>>(`/reports/benchmark-analysis${queryString(filters)}`);
+  },
+
+  decisionSupportInsights(filters: ReportFilters) {
+    return apiClient<ReportBiEnvelope<DecisionSupportInsights>>(`/reports/decision-support-insights${queryString(filters)}`);
   },
 };

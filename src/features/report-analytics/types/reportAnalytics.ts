@@ -144,3 +144,89 @@ export type ReportScheduleDeleteResponse = {
   deleted: boolean;
   production_scheduler: boolean;
 };
+
+export type ReportBiEnvelope<T> = {
+  scope: string;
+  filters: ReportFilters;
+  data: T;
+  cache: {
+    enabled: boolean;
+    scope: string;
+    ttl_seconds: number;
+  };
+  aggregation_job: {
+    queue_enabled: boolean;
+    status: string;
+    retry: {
+      attempts: number;
+      max_attempts: number;
+      retryable: boolean;
+    };
+  };
+  read_only: boolean;
+  uses_ai: boolean;
+  uses_machine_learning: boolean;
+  uses_llm: boolean;
+};
+
+export type ExecutiveScorecard = {
+  financial_score: number;
+  production_score: number;
+  inventory_score: number;
+  harvest_score: number;
+  operational_score: number;
+  overall_score: number;
+  status: string;
+  formula: string;
+  rule_based: boolean;
+  uses_ai: boolean;
+};
+
+export type TrendAnalysis = {
+  period: string;
+  labels: string[];
+  series: Array<{
+    name: string;
+    values: number[];
+    current_value: number;
+    direction: string;
+  }>;
+  missing_period_strategy: string;
+  read_only: boolean;
+};
+
+export type KpiAnalytics = {
+  items: Array<{
+    key: string;
+    label: string;
+    value: number;
+    unit: string;
+    status: string;
+    direction: string;
+  }>;
+  read_only: boolean;
+};
+
+export type BenchmarkAnalysis = {
+  items: Array<{
+    key: string;
+    label: string;
+    status: string;
+    score: number;
+  }>;
+  formula: string;
+  read_only: boolean;
+};
+
+export type DecisionSupportInsights = {
+  items: Array<{
+    key: string;
+    message: string;
+    type: string;
+    actionable: boolean;
+    automatic_instruction: boolean;
+  }>;
+  uses_ai: boolean;
+  uses_forecast: boolean;
+  read_only: boolean;
+};

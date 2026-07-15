@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FileText, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { BusinessIntelligencePanel } from '../features/report-analytics/components/BusinessIntelligencePanel';
 import { ReportExportPanel } from '../features/report-analytics/components/ReportExportPanel';
 import { ReportFilterPanel } from '../features/report-analytics/components/ReportFilterPanel';
 import { ReportList } from '../features/report-analytics/components/ReportList';
@@ -11,11 +12,16 @@ import { ScheduledReportPanel } from '../features/report-analytics/components/Sc
 import {
   useCreateReportSchedule,
   useDeleteReportSchedule,
+  useBenchmarkAnalysis,
+  useDecisionSupportInsights,
+  useExecutiveScorecard,
   useExportReportMetadata,
   useGenerateReport,
+  useKpiAnalytics,
   useReportCategory,
   useReportRegistry,
   useReportSchedules,
+  useTrendAnalysis,
 } from '../features/report-analytics/hooks/useReportAnalytics';
 import type {
   ReportCategoryKey,
@@ -56,6 +62,11 @@ export function ReportAnalyticsPage() {
   const registryQuery = useReportRegistry(activeFilters);
   const categoryQuery = useReportCategory(activeCategory, activeFilters);
   const schedulesQuery = useReportSchedules(activeFilters);
+  const scorecardQuery = useExecutiveScorecard(activeFilters);
+  const trendQuery = useTrendAnalysis(activeFilters);
+  const kpiQuery = useKpiAnalytics(activeFilters);
+  const benchmarkQuery = useBenchmarkAnalysis(activeFilters);
+  const insightsQuery = useDecisionSupportInsights(activeFilters);
   const generateReport = useGenerateReport();
   const exportMetadata = useExportReportMetadata();
   const createSchedule = useCreateReportSchedule();
@@ -202,6 +213,11 @@ export function ReportAnalyticsPage() {
               void registryQuery.refetch();
               void categoryQuery.refetch();
               void schedulesQuery.refetch();
+              void scorecardQuery.refetch();
+              void trendQuery.refetch();
+              void kpiQuery.refetch();
+              void benchmarkQuery.refetch();
+              void insightsQuery.refetch();
               setStatusMessage('Report workspace refreshed.');
             }}
             type="button"
@@ -217,6 +233,15 @@ export function ReportAnalyticsPage() {
       </div>
 
       {hasError ? <ReportErrorState message="Report workspace data could not be loaded." /> : null}
+
+      <BusinessIntelligencePanel
+        benchmark={benchmarkQuery.data?.data}
+        insights={insightsQuery.data?.data}
+        kpi={kpiQuery.data?.data}
+        loading={scorecardQuery.isLoading || trendQuery.isLoading || kpiQuery.isLoading}
+        scorecard={scorecardQuery.data?.data}
+        trend={trendQuery.data?.data}
+      />
 
       <div className="grid gap-4 xl:grid-cols-[240px_minmax(0,340px)_minmax(0,1fr)]">
         <div className="space-y-4">

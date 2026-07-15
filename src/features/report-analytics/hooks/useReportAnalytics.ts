@@ -14,6 +14,7 @@ const reportKeys = {
   category: (category: ReportCategoryKey, filters: ReportFilters) =>
     [...reportKeys.all, 'category', category, filters] as const,
   schedules: (filters: ReportFilters) => [...reportKeys.all, 'schedules', filters] as const,
+  bi: (scope: string, filters: ReportFilters) => [...reportKeys.all, 'bi', scope, filters] as const,
 };
 
 export function useReportRegistry(filters: ReportFilters) {
@@ -81,5 +82,45 @@ export function useDeleteReportSchedule() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: reportKeys.all });
     },
+  });
+}
+
+export function useExecutiveScorecard(filters: ReportFilters) {
+  return useQuery({
+    queryKey: reportKeys.bi('executive-scorecard', filters),
+    queryFn: () => reportAnalyticsService.executiveScorecard(filters),
+    staleTime: 60_000,
+  });
+}
+
+export function useTrendAnalysis(filters: ReportFilters) {
+  return useQuery({
+    queryKey: reportKeys.bi('trend-analysis', filters),
+    queryFn: () => reportAnalyticsService.trendAnalysis(filters),
+    staleTime: 60_000,
+  });
+}
+
+export function useKpiAnalytics(filters: ReportFilters) {
+  return useQuery({
+    queryKey: reportKeys.bi('kpi-analytics', filters),
+    queryFn: () => reportAnalyticsService.kpiAnalytics(filters),
+    staleTime: 60_000,
+  });
+}
+
+export function useBenchmarkAnalysis(filters: ReportFilters) {
+  return useQuery({
+    queryKey: reportKeys.bi('benchmark-analysis', filters),
+    queryFn: () => reportAnalyticsService.benchmarkAnalysis(filters),
+    staleTime: 60_000,
+  });
+}
+
+export function useDecisionSupportInsights(filters: ReportFilters) {
+  return useQuery({
+    queryKey: reportKeys.bi('decision-support-insights', filters),
+    queryFn: () => reportAnalyticsService.decisionSupportInsights(filters),
+    staleTime: 60_000,
   });
 }

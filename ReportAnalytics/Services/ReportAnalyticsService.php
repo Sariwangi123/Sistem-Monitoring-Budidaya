@@ -18,7 +18,8 @@ final class ReportAnalyticsService
         private ReportRegistry $registry,
         private UniversalReportEngine $engine,
         private ReportCacheService $cacheService,
-        private ScheduledReportService $scheduledReportService
+        private ScheduledReportService $scheduledReportService,
+        private BusinessIntelligenceService $businessIntelligenceService
     ) {
     }
 
@@ -212,13 +213,54 @@ final class ReportAnalyticsService
             'category' => $filters['report_category'] ?? 'all',
             'period' => $filters['period'] ?? null,
             'summary' => [
-                'status' => 'Foundation Ready',
+                'status' => 'Business Intelligence Ready',
                 'read_only' => true,
             ],
-            'trend' => [],
-            'comparison' => [],
+            'trend' => $this->businessIntelligenceService->trend($filters)['data'],
+            'comparison' => $this->businessIntelligenceService->comparative($filters)['data'],
+            'kpi' => $this->businessIntelligenceService->kpi($filters)['data'],
             'filters' => $filters,
         ]);
+    }
+
+    public function businessIntelligence(array $filters, array $roleSlugs, ?int $userId): array
+    {
+        return $this->respond('report.bi.overview', $roleSlugs, $filters, fn (): array => $this->biResource($this->businessIntelligenceService->overview($filters, $roleSlugs, $userId)), 'Business intelligence overview retrieved.');
+    }
+
+    public function executiveAnalytics(array $filters, array $roleSlugs, ?int $userId): array
+    {
+        return $this->respond('report.bi.executive', $roleSlugs, $filters, fn (): array => $this->biResource($this->businessIntelligenceService->executive($filters, $roleSlugs, $userId)), 'Executive analytics retrieved.');
+    }
+
+    public function trendAnalysis(array $filters, array $roleSlugs, ?int $userId): array
+    {
+        return $this->respond('report.bi.trend', $roleSlugs, $filters, fn (): array => $this->biResource($this->businessIntelligenceService->trend($filters, $roleSlugs, $userId)), 'Trend analysis retrieved.');
+    }
+
+    public function comparativeAnalysis(array $filters, array $roleSlugs, ?int $userId): array
+    {
+        return $this->respond('report.bi.comparative', $roleSlugs, $filters, fn (): array => $this->biResource($this->businessIntelligenceService->comparative($filters, $roleSlugs, $userId)), 'Comparative analysis retrieved.');
+    }
+
+    public function kpiAnalytics(array $filters, array $roleSlugs, ?int $userId): array
+    {
+        return $this->respond('report.bi.kpi', $roleSlugs, $filters, fn (): array => $this->biResource($this->businessIntelligenceService->kpi($filters, $roleSlugs, $userId)), 'KPI analytics retrieved.');
+    }
+
+    public function executiveScorecard(array $filters, array $roleSlugs, ?int $userId): array
+    {
+        return $this->respond('report.bi.scorecard', $roleSlugs, $filters, fn (): array => $this->biResource($this->businessIntelligenceService->scorecard($filters, $roleSlugs, $userId)), 'Executive scorecard retrieved.');
+    }
+
+    public function benchmarkAnalysis(array $filters, array $roleSlugs, ?int $userId): array
+    {
+        return $this->respond('report.bi.benchmark', $roleSlugs, $filters, fn (): array => $this->biResource($this->businessIntelligenceService->benchmark($filters, $roleSlugs, $userId)), 'Benchmark analysis retrieved.');
+    }
+
+    public function decisionSupportInsights(array $filters, array $roleSlugs, ?int $userId): array
+    {
+        return $this->respond('report.bi.insights', $roleSlugs, $filters, fn (): array => $this->biResource($this->businessIntelligenceService->insights($filters, $roleSlugs, $userId)), 'Decision support insights retrieved.');
     }
 
     public function generate(array $payload, array $roleSlugs = [], ?int $userId = null): array
@@ -412,6 +454,23 @@ final class ReportAnalyticsService
         ];
     }
 
+    private function biEnvelope(array $payload): array
+    {
+        return $payload + [
+            'read_only' => true,
+            'uses_ai' => false,
+            'uses_machine_learning' => false,
+            'uses_llm' => false,
+        ];
+    }
+
+    private function biResource(array $payload): array
+    {
+        return [
+            'data' => $this->biEnvelope($payload),
+        ];
+    }
+
     /** @return array<int, array<string, mixed>> */
     private function workspacesForRoles(array $roleSlugs): array
     {
@@ -512,6 +571,8 @@ final class ReportAnalyticsService
             'cache_engine' => 'Scoped Metadata Cache Ready',
             'queue_engine' => 'Background Job Foundation Ready',
             'schedule_engine' => 'Schedule Foundation Ready',
+            'business_intelligence' => 'Rule Based Analytics Ready',
+            'executive_analytics' => 'Executive Scorecard Ready',
             'report_layout' => 'Foundation Ready',
             'file_naming' => 'REPORTTYPE-YYYYMMDD-HHMMSS',
         ];

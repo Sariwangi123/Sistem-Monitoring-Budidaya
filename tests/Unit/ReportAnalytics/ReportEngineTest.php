@@ -6,6 +6,9 @@ use ReportAnalytics\Builders\ReportBuilder;
 use ReportAnalytics\Engines\UniversalReportEngine;
 use ReportAnalytics\Formatters\ReportDataFormatter;
 use ReportAnalytics\Registry\ReportRegistry;
+use ReportAnalytics\Services\BusinessIntelligenceService;
+use ReportAnalytics\Services\ExecutiveAnalyticsService;
+use ReportAnalytics\Services\TrendAnalysisService;
 use ReportAnalytics\Support\ReportDefinition;
 use ReportAnalytics\Support\ReportRequest;
 use ReportAnalytics\Templates\TemplateResolver;
@@ -120,5 +123,22 @@ final class ReportEngineTest extends TestCase
             locale: 'id',
             roleSlugs: ['viewer']
         ));
+    }
+
+    public function test_business_intelligence_services_return_rule_based_read_only_analytics(): void
+    {
+        $scorecard = app(ExecutiveAnalyticsService::class)->scorecard();
+        $trend = app(TrendAnalysisService::class)->analyze(['period' => 'weekly']);
+        $overview = app(BusinessIntelligenceService::class)->overview(['period' => 'monthly'], ['super-admin'], 1);
+
+        $this->assertSame(85, $scorecard['overall_score']);
+        $this->assertTrue($scorecard['rule_based']);
+        $this->assertFalse($scorecard['uses_ai']);
+        $this->assertSame('weekly', $trend['period']);
+        $this->assertNotEmpty($trend['labels']);
+        $this->assertTrue($overview['read_only']);
+        $this->assertFalse($overview['uses_ai']);
+        $this->assertFalse($overview['uses_machine_learning']);
+        $this->assertFalse($overview['uses_llm']);
     }
 }

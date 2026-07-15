@@ -117,6 +117,62 @@ final class ReportAnalyticsController extends Controller
         return new ReportAnalyticsResource($this->service->analytics($request->validated()));
     }
 
+    public function businessIntelligence(ReportQueryRequest $request): JsonResource
+    {
+        Gate::authorize('view-report-category', ['analytics']);
+
+        return new ReportAnalyticsResource($this->service->businessIntelligence($request->validated(), $this->roleSlugs($request), $request->user()?->id));
+    }
+
+    public function executiveAnalytics(ReportQueryRequest $request): JsonResource
+    {
+        Gate::authorize('view-report-category', ['executive']);
+
+        return new ReportAnalyticsResource($this->service->executiveAnalytics($request->validated(), $this->roleSlugs($request), $request->user()?->id));
+    }
+
+    public function trendAnalysis(ReportQueryRequest $request): JsonResource
+    {
+        Gate::authorize('view-report-category', ['analytics']);
+
+        return new ReportAnalyticsResource($this->service->trendAnalysis($request->validated(), $this->roleSlugs($request), $request->user()?->id));
+    }
+
+    public function comparativeAnalysis(ReportQueryRequest $request): JsonResource
+    {
+        Gate::authorize('view-report-category', ['comparative']);
+
+        return new ReportAnalyticsResource($this->service->comparativeAnalysis($request->validated(), $this->roleSlugs($request), $request->user()?->id));
+    }
+
+    public function kpiAnalytics(ReportQueryRequest $request): JsonResource
+    {
+        Gate::authorize('view-report-category', ['kpi']);
+
+        return new ReportAnalyticsResource($this->service->kpiAnalytics($request->validated(), $this->roleSlugs($request), $request->user()?->id));
+    }
+
+    public function executiveScorecard(ReportQueryRequest $request): JsonResource
+    {
+        Gate::authorize('view-report-category', ['executive']);
+
+        return new ReportAnalyticsResource($this->service->executiveScorecard($request->validated(), $this->roleSlugs($request), $request->user()?->id));
+    }
+
+    public function benchmarkAnalysis(ReportQueryRequest $request): JsonResource
+    {
+        Gate::authorize('view-report-category', ['analytics']);
+
+        return new ReportAnalyticsResource($this->service->benchmarkAnalysis($request->validated(), $this->roleSlugs($request), $request->user()?->id));
+    }
+
+    public function decisionSupportInsights(ReportQueryRequest $request): JsonResource
+    {
+        Gate::authorize('view-report-category', ['analytics']);
+
+        return new ReportAnalyticsResource($this->service->decisionSupportInsights($request->validated(), $this->roleSlugs($request), $request->user()?->id));
+    }
+
     public function generate(ReportGenerateRequest $request): JsonResource
     {
         $definition = $this->service->definitionFor($request->validated('report_type'));
