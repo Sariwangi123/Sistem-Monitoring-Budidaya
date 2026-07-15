@@ -20,7 +20,6 @@ final class EmployeeFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'address' => fake()->address(),
             'position' => fake()->jobTitle(),
-            'description' => fake()->optional()->sentence(),
         ];
     }
 }

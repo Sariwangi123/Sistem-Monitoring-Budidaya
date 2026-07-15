@@ -19,7 +19,6 @@ final class SupplierFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'email' => fake()->unique()->companyEmail(),
             'address' => fake()->address(),
-            'description' => fake()->optional()->sentence(),
         ];
     }
 }

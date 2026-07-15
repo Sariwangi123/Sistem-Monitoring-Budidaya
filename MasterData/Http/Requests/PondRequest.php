@@ -19,11 +19,9 @@ class PondRequest extends BaseRequest
                 Rule::unique('ponds', 'pond_code')->ignore($id),
             ],
             'pond_name' => ['required', 'string', 'max:255'],
-            'pond_type' => ['required', 'string', 'max:50'],
-            'width' => ['nullable', 'numeric', 'min:0'],
-            'length' => ['nullable', 'numeric', 'min:0'],
             'depth' => ['nullable', 'numeric', 'min:0'],
             'area_size' => ['nullable', 'numeric', 'min:0'],
+            'volume' => ['nullable', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
         ];
     }

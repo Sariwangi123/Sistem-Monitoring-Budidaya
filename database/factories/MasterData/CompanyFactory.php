@@ -28,7 +28,6 @@ final class CompanyFactory extends Factory
             'village_id' => \MasterData\Models\Village::factory(),
             'postal_code' => fake()->postcode(),
             'logo' => fake()->optional()->imageUrl(),
-            'description' => fake()->optional()->sentence(),
         ];
     }
 }

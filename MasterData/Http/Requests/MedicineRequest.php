@@ -18,8 +18,10 @@ class MedicineRequest extends BaseRequest
                 Rule::unique('medicines', 'medicine_code')->ignore($id),
             ],
             'medicine_name' => ['required', 'string', 'max:255'],
-            'medicine_type' => ['required', 'string', 'max:50'],
+            'active_ingredient' => ['nullable', 'string', 'max:255'],
             'manufacturer' => ['nullable', 'string', 'max:255'],
+            'packaging_size' => ['nullable', 'numeric', 'min:0'],
+            'packaging_unit_id' => ['nullable', 'integer', 'exists:units,id'],
             'description' => ['nullable', 'string'],
         ];
     }

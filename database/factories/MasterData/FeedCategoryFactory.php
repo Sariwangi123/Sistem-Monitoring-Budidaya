@@ -14,7 +14,8 @@ final class FeedCategoryFactory extends Factory
     {
         return [
             'uuid' => (string) Str::uuid(),
-            'category_name' => fake()->unique()->word(),
+            'feed_category_code' => strtoupper(fake()->unique()->lexify('FCAT???')),
+            'feed_category_name' => fake()->unique()->word(),
             'description' => fake()->optional()->sentence(),
         ];
     }

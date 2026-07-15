@@ -32,6 +32,21 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Added Warehouse services for warehouse, inventory, stock, and stock opname workflows.
 - Added Warehouse API requests, resources, controllers, routes, and policies.
 - Added Warehouse feature API tests for warehouse CRUD, inventory movement, stock, and stock opname flows.
+- Added Harvest database migrations for harvests, harvest batches, quality controls, grades, packings, and deliveries.
+- Added Harvest Eloquent models with fillable fields, casts, relationships, and query scopes.
+- Added Harvest factories and seeder for harvest, batch, QC, grade, packing, and delivery seed/test data.
+- Added Harvest repository interfaces and container bindings for harvest, batch, QC, grade, packing, and delivery repositories.
+- Added Harvest service layer with transactional create/update operations and workflow status helpers.
+- Added Harvest API requests, resources, controllers, routes, and policies for harvest operational endpoints.
+- Added Harvest feature and unit tests for CRUD, operational sub-resource creation, validation, authentication, and service workflow transitions.
+- Added Master Data schema alignment migration for region code columns used by the current API contract.
+- Added Finance database migrations for cost centers, expenses, revenues, journals, ledgers, journal entries, cost allocations, profit calculations, and financial summaries.
+- Added Finance Eloquent models with fillable fields, casts, relationships, UUID, soft deletes, audit support, and query scopes.
+- Added Finance factories and seeder for cost center, expense, revenue, journal, ledger, journal entry, cost allocation, profit calculation, and financial summary seed/test data.
+- Added Finance repository interfaces, repositories, and service container bindings.
+- Added Finance service layer with transactional create/update operations, financial workflow status transitions (Draft→Validated→Posted→Completed→Closed→Locked), ledger posting engine (Expense and Revenue auto-generate Journal, Ledger, and Journal Entries on posting), journal balance validation, ledger immutability guard, cost center and financial period validation, profit calculation engine (Cost of Production, Gross Profit, Net Profit, Cost per KG), and financial summary aggregation.
+- Added Finance API layer with form requests, API resources, thin service-backed controllers, route registration, and policies for cost centers, expenses, revenues, journals, ledgers, journal entries, cost allocations, profit calculations, and financial summaries.
+- Added Finance feature and unit tests for API CRUD, operational resource creation, validation, authentication, posting workflows, journal balance validation, ledger immutability, profit calculation, and financial summary workflows.
 
 ## Fixed
 
@@ -45,6 +60,7 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Fixed `HasFactory` + `HasModuleFactory` collision in `CultureCycle/Models/CultureCycle.php`.
 - Fixed `use HasFactory;` import missing in Activities models (ActivityCategory, ActivityType, Activity, ActivityAttachment, ActivityComment).
 - Fixed `_code` column naming in MasterData migrations (`province_code`, `city_code`, etc.) for proper API resource prefix.
+- Fixed Master Data API request, factory, and test alignment with current migration fields and UUID-based resource endpoints.
 
 ## Verification
 
@@ -66,6 +82,51 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
   - ✅ `php artisan migrate:status` — 48 migrations in batch [1] Ran (foundation, master data, culture cycle, activities, warehouse)
   - ✅ All Docker containers running, all tests pass
   - 🏁 **Verifikasi milestone — ✅ Passed**
+- Ran Harvest Part 1 migration verification (2026-07-12):
+  - ✅ `docker compose exec app php artisan migrate` — Harvest migrations completed.
+  - ✅ `docker compose exec app php artisan migrate:status` — 6 Harvest migrations in batch [2] Ran.
+- Ran Harvest Part 7 verification (2026-07-14):
+  - ✅ `docker compose exec app composer install` — nothing to install, optimized autoload
+  - ✅ `docker compose exec app php artisan route:list` — 266 routes registered
+  - ✅ `docker compose exec app php artisan test` — 34 passed, 193 assertions
+  - ✅ `docker compose exec app php artisan about` — Laravel 12.63.0, PHP 8.4.23, PostgreSQL
+  - ✅ `docker compose exec app php artisan migrate:status` — 54 migrations in batch [1] Ran
+  - 🏁 **Harvest Part 7 Testing — ✅ Completed**
+- Ran Finance Part 1 migration verification (2026-07-14):
+  - ✅ `docker compose exec app php artisan migrate` — 9 Finance migrations completed.
+  - ✅ `docker compose exec app php artisan migrate:status` — Finance migrations in batch [2] Ran.
+- Ran Finance Part 2 model verification (2026-07-14):
+  - ✅ `composer dump-autoload` — optimized autoload regenerated.
+  - ✅ Finance model class resolution — 9 models OK.
+- Ran Finance Part 3 seeder verification (2026-07-14):
+  - ✅ `docker compose exec app composer dump-autoload` — optimized autoload regenerated.
+  - ✅ `docker compose exec app php artisan db:seed "--class=Database\\Seeders\\Finance\\FinanceSeeder"` — passed.
+- Ran Finance Part 4 repository verification (2026-07-14):
+  - ✅ PHP lint for Finance repositories and interfaces — passed.
+  - ✅ Laravel container binding resolution — 9 Finance repository interfaces resolved.
+- Ran Finance Part 5 service layer verification (2026-07-14):
+  - ✅ `docker compose exec app composer dump-autoload` — 6568 classes, optimized autoload regenerated.
+  - ✅ `php artisan config:clear`, `route:clear`, `view:clear` — passed.
+  - ✅ `docker compose exec app php artisan test` — 34 passed, 193 assertions, 0 failures.
+  - ✅ 9 Finance services implemented: CostCenter, Expense, Revenue, Journal, JournalEntry, Ledger, CostAllocation, ProfitCalculation, FinancialSummary.
+  - ✅ Ledger Posting Engine berjalan — postExpense dan postRevenue auto-generate Journal + Ledger + Journal Entries.
+  - ✅ Journal Balance Validation — Debit harus sama dengan Credit sebelum posting.
+  - ✅ Ledger Immutability Guard — Posted ledger tidak dapat diubah atau dihapus.
+  - ✅ Profit Calculation Engine — Cost of Production, Gross Profit, Net Profit, Cost per KG dihitung dari Ledger Posted.
+  - ✅ Financial Summary Engine — total_expense, total_revenue, gross_profit, net_profit, profit_margin dihitung otomatis.
+- Ran Finance Part 6 API layer verification (2026-07-15):
+  - ✅ `docker compose up -d` — app, postgres, redis, and nginx containers started.
+  - ✅ `docker compose exec app composer dump-autoload` — 6605 classes, optimized autoload regenerated.
+  - ✅ `docker compose exec app php artisan route:list` — 329 routes registered, including Finance API resources and restore/force-delete routes.
+  - ✅ PHP lint for Finance API requests, resources, controllers, routes, and policies — passed.
+- Ran Finance Part 7 testing and module completion verification (2026-07-15):
+  - ✅ Finance-only test run — 9 passed, 64 assertions.
+  - ✅ `docker compose exec app composer install` — nothing to install, optimized autoload regenerated.
+  - ✅ `docker compose exec app php artisan route:list` — 329 routes registered.
+  - ✅ `docker compose exec app php artisan test` — 43 passed, 257 assertions.
+  - ✅ `docker compose exec app php artisan about` — Laravel 12.63.0, PHP 8.4.23, PostgreSQL.
+  - ✅ `docker compose exec app php artisan migrate:status` — all 63 migrations Ran.
+  - 🏁 **Finance module — ✅ Completed**
 
 ## Planned
 

@@ -16,7 +16,8 @@ final class MedicineFactory extends Factory
             'uuid' => (string) Str::uuid(),
             'medicine_code' => strtoupper(fake()->unique()->lexify('MED???')),
             'medicine_name' => fake()->unique()->word(),
-            'dosage' => fake()->randomElement(['250ml', '500ml', '1L', '100g', '500g', '1kg']),
+            'active_ingredient' => fake()->word(),
+            'manufacturer' => fake()->company(),
             'description' => fake()->optional()->sentence(),
         ];
     }

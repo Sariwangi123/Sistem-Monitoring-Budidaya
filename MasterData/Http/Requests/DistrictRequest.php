@@ -11,7 +11,7 @@ class DistrictRequest extends BaseRequest
         $id = $this->route('id');
 
         return [
-            'city_code' => ['required', 'string', 'exists:cities,city_code'],
+            'city_id' => ['required', 'integer', 'exists:cities,id'],
             'district_code' => [
                 'required',
                 'string',

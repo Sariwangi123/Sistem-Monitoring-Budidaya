@@ -15,7 +15,8 @@ final class FishStrainFactory extends Factory
         return [
             'uuid' => (string) Str::uuid(),
             'fish_species_id' => \MasterData\Models\FishSpecies::factory(),
-            'strain_name' => fake()->unique()->word(),
+            'fish_strain_code' => strtoupper(fake()->unique()->lexify('STR???')),
+            'fish_strain_name' => fake()->unique()->word(),
             'description' => fake()->optional()->sentence(),
         ];
     }

@@ -16,7 +16,8 @@ final class ProbioticFactory extends Factory
             'uuid' => (string) Str::uuid(),
             'probiotic_code' => strtoupper(fake()->unique()->lexify('PRO???')),
             'probiotic_name' => fake()->unique()->word(),
-            'dosage' => fake()->randomElement(['250ml', '500ml', '1L', '100g', '500g']),
+            'bacterial_strain' => fake()->word(),
+            'manufacturer' => fake()->company(),
             'description' => fake()->optional()->sentence(),
         ];
     }

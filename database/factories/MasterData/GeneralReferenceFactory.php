@@ -14,10 +14,10 @@ final class GeneralReferenceFactory extends Factory
     {
         return [
             'uuid' => (string) Str::uuid(),
-            'ref_group' => fake()->word(),
-            'ref_name' => fake()->word(),
-            'ref_slug' => fake()->unique()->slug(),
-            'ref_value' => fake()->sentence(),
+            'reference_code' => strtoupper(fake()->unique()->lexify('REF???')),
+            'reference_name' => fake()->word(),
+            'reference_group' => fake()->word(),
+            'reference_value' => fake()->sentence(),
             'description' => fake()->optional()->sentence(),
         ];
     }

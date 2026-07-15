@@ -14,8 +14,8 @@ final class FeedBrandFactory extends Factory
     {
         return [
             'uuid' => (string) Str::uuid(),
-            'brand_name' => fake()->unique()->company(),
-            'manufacturer' => fake()->company(),
+            'feed_brand_code' => strtoupper(fake()->unique()->lexify('FBR???')),
+            'feed_brand_name' => fake()->unique()->company(),
             'description' => fake()->optional()->sentence(),
         ];
     }

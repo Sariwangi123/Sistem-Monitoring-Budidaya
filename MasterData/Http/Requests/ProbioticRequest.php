@@ -18,8 +18,10 @@ class ProbioticRequest extends BaseRequest
                 Rule::unique('probiotics', 'probiotic_code')->ignore($id),
             ],
             'probiotic_name' => ['required', 'string', 'max:255'],
-            'probiotic_type' => ['required', 'string', 'max:50'],
+            'bacterial_strain' => ['nullable', 'string', 'max:255'],
             'manufacturer' => ['nullable', 'string', 'max:255'],
+            'packaging_size' => ['nullable', 'numeric', 'min:0'],
+            'packaging_unit_id' => ['nullable', 'integer', 'exists:units,id'],
             'description' => ['nullable', 'string'],
         ];
     }

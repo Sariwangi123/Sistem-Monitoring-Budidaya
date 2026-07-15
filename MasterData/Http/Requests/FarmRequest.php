@@ -11,7 +11,7 @@ class FarmRequest extends BaseRequest
         $id = $this->route('id');
 
         return [
-            'company_code' => ['required', 'string', 'exists:companies,company_code'],
+            'company_id' => ['required', 'integer', 'exists:companies,id'],
             'farm_code' => [
                 'required',
                 'string',
@@ -20,17 +20,8 @@ class FarmRequest extends BaseRequest
             ],
             'farm_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'address' => ['nullable', 'string'],
-            'province_code' => ['nullable', 'string', 'exists:provinces,province_code'],
-            'city_code' => ['nullable', 'string', 'exists:cities,city_code'],
-            'district_code' => ['nullable', 'string', 'exists:districts,district_code'],
-            'village_code' => ['nullable', 'string', 'exists:villages,village_code'],
-            'postal_code' => ['nullable', 'string', 'max:10'],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'email' => ['nullable', 'email', 'max:255'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
-            'is_active' => ['boolean'],
         ];
     }
 }

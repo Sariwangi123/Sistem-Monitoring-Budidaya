@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use Database\Seeders\CultureCycle\CultureCycleSeeder;
+use Database\Seeders\Finance\FinanceSeeder;
+use Database\Seeders\Harvest\HarvestSeeder;
 use Database\Seeders\Warehouse\WarehouseSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -68,5 +70,7 @@ final class DatabaseSeeder extends Seeder
 
         $this->call(CultureCycleSeeder::class);
         $this->call(WarehouseSeeder::class);
+        $this->call(HarvestSeeder::class);
+        $this->call(FinanceSeeder::class);
     }
 }

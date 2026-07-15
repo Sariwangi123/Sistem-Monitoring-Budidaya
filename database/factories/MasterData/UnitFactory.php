@@ -17,7 +17,6 @@ final class UnitFactory extends Factory
             'unit_code' => strtoupper(fake()->unique()->lexify('???')),
             'unit_name' => fake()->word(),
             'symbol' => fake()->unique()->randomElement(['kg', 'g', 'L', 'ml', 'm', 'cm', 'pcs', 'box', 'sack', 'ton']),
-            'description' => fake()->optional()->sentence(),
         ];
     }
 }

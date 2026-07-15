@@ -2,6 +2,8 @@
 
 use Activities\Routes\ActivitiesRoutes;
 use CultureCycle\Routes\CultureCycleRoutes;
+use Finance\Routes\FinanceRoutes;
+use Harvest\Routes\HarvestRoutes;
 use Illuminate\Support\Facades\Route;
 use MasterData\Routes\MasterDataRoutes;
 use Modules\Auth\Routes\AuthRoutes;
@@ -17,6 +19,8 @@ Route::prefix('v1')->group(function (): void {
         MasterDataRoutes::register();
         CultureCycleRoutes::register();
         ActivitiesRoutes::register();
+        HarvestRoutes::register();
+        FinanceRoutes::register();
         WarehouseRoutes::register();
         UserRoutes::register();
         SettingRoutes::register();

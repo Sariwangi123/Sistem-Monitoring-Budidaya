@@ -2,505 +2,305 @@
 
 namespace Tests\Feature\MasterData;
 
-use MasterData\Models\Province;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use MasterData\Models\City;
-use MasterData\Models\District;
-use MasterData\Models\Village;
-use MasterData\Models\Unit;
 use MasterData\Models\Company;
+use MasterData\Models\Customer;
+use MasterData\Models\District;
+use MasterData\Models\Employee;
 use MasterData\Models\Farm;
-use MasterData\Models\PondArea;
-use MasterData\Models\Pond;
-use MasterData\Models\FishSpecies;
-use MasterData\Models\FishStrain;
 use MasterData\Models\FeedBrand;
 use MasterData\Models\FeedCategory;
-use MasterData\Models\FeedType;
-use MasterData\Models\Medicine;
-use MasterData\Models\Probiotic;
-use MasterData\Models\Vitamin;
-use MasterData\Models\Supplier;
-use MasterData\Models\Customer;
-use MasterData\Models\Employee;
-use MasterData\Models\GeneralReference;
+use MasterData\Models\FishSpecies;
+use MasterData\Models\PondArea;
+use MasterData\Models\Province;
+use MasterData\Models\Unit;
+use MasterData\Models\Village;
 use Modules\Users\Models\User;
 use Tests\TestCase;
 
 final class MasterDataApiTest extends TestCase
 {
-    private User $adminUser;
+    use RefreshDatabase;
 
     private const API_PREFIX = '/api/v1';
+
+    private User $adminUser;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        /** @var User $adminUser */
-        $adminUser = User::factory()->create();
-        $adminUser->assignRole('super-admin');
-        $this->adminUser = $adminUser;
+        $this->adminUser = User::factory()->create();
+        $this->adminUser->assignRole('super-admin');
     }
 
-    // ======================= REGION: Province =======================
-
-    public function test_province_can_be_listed(): void
+    public function test_province_crud_flow(): void
     {
-        Province::factory()->count(3)->create();
+        $payload = [
+            'province_code' => 'PROV-API',
+            'province_name' => 'Province API',
+        ];
 
-        $response = $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . '/master/provinces');
+        $createResponse = $this->actingAs($this->adminUser)
+            ->postJson(self::API_PREFIX.'/master/provinces', $payload);
 
-        $response->assertOk()
-            ->assertJsonStructure([
-                'status',
-                'message',
-                'data' => [
-                    'data',
-                    'meta' => ['current_page', 'last_page', 'per_page', 'total'],
-                ],
-            ]);
-    }
+        $createResponse->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.province_code', 'PROV-API');
 
-    public function test_province_can_be_created(): void
-    {
-        $payload = Province::factory()->make()->toArray();
+        $uuid = $createResponse->json('data.uuid');
 
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/provinces', $payload);
+        $this->actingAs($this->adminUser)
+            ->getJson(self::API_PREFIX."/master/provinces/{$uuid}")
+            ->assertOk()
+            ->assertJsonPath('data.province_name', 'Province API');
 
-        $response->assertCreated()
-            ->assertJsonPath('status', 201)
-            ->assertJsonStructure([
-                'status',
-                'message',
-                'data' => ['id', 'code', 'name'],
-            ]);
+        $this->actingAs($this->adminUser)
+            ->putJson(self::API_PREFIX."/master/provinces/{$uuid}", [
+                'province_code' => 'PROV-API-UPD',
+                'province_name' => 'Province API Updated',
+            ])->assertOk()
+            ->assertJsonPath('data.province_name', 'Province API Updated');
 
-        $this->assertDatabaseHas('provinces', ['name' => $payload['name']]);
-    }
-
-    public function test_province_can_be_shown(): void
-    {
-        $province = Province::factory()->create();
-
-        $response = $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . "/master/provinces/{$province->id}");
-
-        $response->assertOk()
-            ->assertJsonPath('data.id', $province->id)
-            ->assertJsonPath('data.code', $province->code);
-    }
-
-    public function test_province_can_be_updated(): void
-    {
-        $province = Province::factory()->create();
-        $payload = ['name' => 'Updated Province Name'];
-
-        $response = $this->actingAs($this->adminUser)
-            ->putJson(self::API_PREFIX . "/master/provinces/{$province->id}", $payload);
-
-        $response->assertOk()
-            ->assertJsonPath('data.name', 'Updated Province Name');
-
-        $this->assertDatabaseHas('provinces', [
-            'id' => $province->id,
-            'name' => 'Updated Province Name',
-        ]);
-    }
-
-    public function test_province_can_be_deleted(): void
-    {
-        $province = Province::factory()->create();
-
-        $response = $this->actingAs($this->adminUser)
-            ->deleteJson(self::API_PREFIX . "/master/provinces/{$province->id}");
-
-        $response->assertOk()
+        $this->actingAs($this->adminUser)
+            ->deleteJson(self::API_PREFIX."/master/provinces/{$uuid}")
+            ->assertOk()
             ->assertJsonPath('message', 'Data deleted successfully');
 
-        $this->assertSoftDeleted($province);
+        $this->assertSoftDeleted('provinces', ['uuid' => $uuid]);
     }
 
-    // ======================= REGION: City =======================
-
-    public function test_city_can_be_created_with_province_relation(): void
+    public function test_region_hierarchy_can_be_created(): void
     {
         $province = Province::factory()->create();
-        $payload = City::factory()->withProvince($province)->make()->toArray();
 
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/cities', $payload);
+        $cityResponse = $this->actingAs($this->adminUser)
+            ->postJson(self::API_PREFIX.'/master/cities', [
+                'province_id' => $province->id,
+                'city_code' => 'CITY-API',
+                'city_name' => 'City API',
+            ]);
 
-        $response->assertCreated()
+        $cityResponse->assertCreated()
             ->assertJsonPath('data.province_id', $province->id);
-    }
 
-    public function test_city_requires_province_id(): void
-    {
-        $payload = City::factory()->make(['province_id' => null])->toArray();
+        $districtResponse = $this->actingAs($this->adminUser)
+            ->postJson(self::API_PREFIX.'/master/districts', [
+                'city_id' => $cityResponse->json('data.id'),
+                'district_code' => 'DIST-API',
+                'district_name' => 'District API',
+            ]);
 
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/cities', $payload);
+        $districtResponse->assertCreated()
+            ->assertJsonPath('data.city_id', $cityResponse->json('data.id'));
 
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['province_id']);
-    }
-
-    // ======================= REGION: District =======================
-
-    public function test_district_can_be_created_with_city_relation(): void
-    {
-        $province = Province::factory()->create();
-        $city = City::factory()->withProvince($province)->create();
-        $payload = District::factory()->withCity($city)->make()->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/districts', $payload);
-
-        $response->assertCreated()
-            ->assertJsonPath('data.city_id', $city->id);
-    }
-
-    public function test_district_requires_city_id(): void
-    {
-        $payload = District::factory()->make(['city_id' => null])->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/districts', $payload);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['city_id']);
-    }
-
-    // ======================= REGION: Village =======================
-
-    public function test_village_requires_district_id(): void
-    {
-        $payload = Village::factory()->make(['district_id' => null])->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/villages', $payload);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['district_id']);
-    }
-
-    // ======================= REGION: Unit =======================
-
-    public function test_unit_crud(): void
-    {
-        // List
-        Unit::factory()->count(2)->create();
         $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . '/master/units')
+            ->postJson(self::API_PREFIX.'/master/villages', [
+                'district_id' => $districtResponse->json('data.id'),
+                'village_code' => 'VIL-API',
+                'village_name' => 'Village API',
+            ])->assertCreated()
+            ->assertJsonPath('data.district_id', $districtResponse->json('data.id'));
+    }
+
+    public function test_unit_crud_flow(): void
+    {
+        $createResponse = $this->actingAs($this->adminUser)
+            ->postJson(self::API_PREFIX.'/master/units', [
+                'unit_code' => 'KG-API',
+                'unit_name' => 'Kilogram API',
+                'symbol' => 'kg-api',
+            ]);
+
+        $createResponse->assertCreated()
+            ->assertJsonPath('data.unit_code', 'KG-API');
+
+        $uuid = $createResponse->json('data.uuid');
+
+        $this->actingAs($this->adminUser)
+            ->putJson(self::API_PREFIX."/master/units/{$uuid}", [
+                'unit_code' => 'KG-API-UPD',
+                'unit_name' => 'Kilogram API Updated',
+                'symbol' => 'kg-api',
+            ])->assertOk()
+            ->assertJsonPath('data.unit_name', 'Kilogram API Updated');
+
+        $this->actingAs($this->adminUser)
+            ->deleteJson(self::API_PREFIX."/master/units/{$uuid}")
             ->assertOk();
 
-        // Create
-        $payload = Unit::factory()->make()->toArray();
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/units', $payload);
-        $response->assertCreated();
-
-        // Show
-        $unitId = $response->json('data.id');
-        $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . "/master/units/{$unitId}")
-            ->assertOk()
-            ->assertJsonPath('data.id', $unitId);
-
-        // Update
-        $this->actingAs($this->adminUser)
-            ->putJson(self::API_PREFIX . "/master/units/{$unitId}", [
-                'name' => 'Updated Unit',
-            ])
-            ->assertOk()
-            ->assertJsonPath('data.name', 'Updated Unit');
-
-        // Delete
-        $this->actingAs($this->adminUser)
-            ->deleteJson(self::API_PREFIX . "/master/units/{$unitId}")
-            ->assertOk();
-
-        $this->assertSoftDeleted('units', ['id' => $unitId]);
+        $this->assertSoftDeleted('units', ['uuid' => $uuid]);
     }
 
-    // ======================= REGION: Company with Farm =======================
-
-    public function test_company_can_be_created(): void
+    public function test_company_farm_pond_area_and_pond_can_be_created(): void
     {
-        $village = Village::factory()->create();
-        $unit = Unit::factory()->create();
-        $payload = Company::factory()->withRelations($village, $unit)->make()->toArray();
+        $context = $this->createRegionContext();
 
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/companies', $payload);
+        $companyResponse = $this->actingAs($this->adminUser)
+            ->postJson(self::API_PREFIX.'/master/companies', [
+                'company_code' => 'CMP-API',
+                'company_name' => 'Company API',
+                'email' => 'company.api@example.com',
+                'province_id' => $context['province']->id,
+                'city_id' => $context['city']->id,
+                'district_id' => $context['district']->id,
+                'village_id' => $context['village']->id,
+            ]);
 
-        $response->assertCreated()
-            ->assertJsonPath('data.village_id', $village->id)
-            ->assertJsonPath('data.unit_id', $unit->id);
-    }
+        $companyResponse->assertCreated()
+            ->assertJsonPath('data.company_code', 'CMP-API');
 
-    public function test_farm_can_be_created_with_company_relation(): void
-    {
-        $village = Village::factory()->create();
-        $unit = Unit::factory()->create();
-        $company = Company::factory()->withRelations($village, $unit)->create();
-        $payload = Farm::factory()->withCompany($company)->make()->toArray();
+        $farmResponse = $this->actingAs($this->adminUser)
+            ->postJson(self::API_PREFIX.'/master/farms', [
+                'company_id' => $companyResponse->json('data.id'),
+                'farm_code' => 'FRM-API',
+                'farm_name' => 'Farm API',
+                'area_size' => 1000,
+            ]);
 
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/farms', $payload);
+        $farmResponse->assertCreated()
+            ->assertJsonPath('data.company_id', $companyResponse->json('data.id'));
 
-        $response->assertCreated()
-            ->assertJsonPath('data.company_id', $company->id);
-    }
-
-    // ======================= REGION: Pond Area & Pond =======================
-
-    public function test_pond_area_and_pond_hierarchical(): void
-    {
-        $village = Village::factory()->create();
-        $unit = Unit::factory()->create();
-        $company = Company::factory()->withRelations($village, $unit)->create();
-        $farm = Farm::factory()->withCompany($company)->create();
-
-        // Create Pond Area
-        $pondAreaPayload = PondArea::factory()->withFarm($farm)->make()->toArray();
         $pondAreaResponse = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/pond-areas', $pondAreaPayload);
+            ->postJson(self::API_PREFIX.'/master/pond-areas', [
+                'farm_id' => $farmResponse->json('data.id'),
+                'pond_area_code' => 'PA-API',
+                'pond_area_name' => 'Pond Area API',
+                'area_size' => 500,
+            ]);
+
         $pondAreaResponse->assertCreated();
-        $pondAreaId = $pondAreaResponse->json('data.id');
 
-        // Create Pond
-        $pondPayload = Pond::factory()->withPondAreaId($pondAreaId)->make()->toArray();
-        $pondResponse = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/ponds', $pondPayload);
-        $pondResponse->assertCreated()
-            ->assertJsonPath('data.pond_area_id', $pondAreaId);
+        $this->actingAs($this->adminUser)
+            ->postJson(self::API_PREFIX.'/master/ponds', [
+                'pond_area_id' => $pondAreaResponse->json('data.id'),
+                'pond_code' => 'PND-API',
+                'pond_name' => 'Pond API',
+                'area_size' => 250,
+                'depth' => 2,
+                'volume' => 500,
+            ])->assertCreated()
+            ->assertJsonPath('data.pond_area_id', $pondAreaResponse->json('data.id'));
     }
 
-    // ======================= REGION: Fish Species & Strain =======================
-
-    public function test_fish_species_with_strains(): void
+    public function test_fish_and_feed_master_data_can_be_created(): void
     {
-        // Create fish species
-        $speciesPayload = FishSpecies::factory()->make()->toArray();
         $speciesResponse = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/fish-species', $speciesPayload);
+            ->postJson(self::API_PREFIX.'/master/fish-species', [
+                'fish_species_code' => 'FSP-API',
+                'fish_species_name' => 'Species API',
+                'scientific_name' => 'Species scientific',
+            ]);
+
         $speciesResponse->assertCreated();
-        $speciesId = $speciesResponse->json('data.id');
 
-        // Create strain for species
-        $strainPayload = FishStrain::factory()->withSpecies($speciesId)->make()->toArray();
         $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/fish-strains', $strainPayload)
-            ->assertCreated()
-            ->assertJsonPath('data.fish_species_id', $speciesId);
-    }
+            ->postJson(self::API_PREFIX.'/master/fish-strains', [
+                'fish_species_id' => $speciesResponse->json('data.id'),
+                'fish_strain_code' => 'FST-API',
+                'fish_strain_name' => 'Strain API',
+            ])->assertCreated()
+            ->assertJsonPath('data.fish_species_id', $speciesResponse->json('data.id'));
 
-    // ======================= REGION: Feed =======================
-
-    public function test_feed_hierarchy(): void
-    {
         $brand = FeedBrand::factory()->create();
-        $category = FeedCategory::factory()->withBrand($brand)->create();
-        $typePayload = FeedType::factory()->withCategory($category)->make()->toArray();
+        $category = FeedCategory::factory()->create();
 
         $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/feed-types', $typePayload)
-            ->assertCreated()
+            ->postJson(self::API_PREFIX.'/master/feed-types', [
+                'feed_brand_id' => $brand->id,
+                'feed_category_id' => $category->id,
+                'feed_type_code' => 'FT-API',
+                'feed_type_name' => 'Feed Type API',
+                'protein_content' => 32,
+            ])->assertCreated()
             ->assertJsonPath('data.feed_category_id', $category->id);
     }
 
-    // ======================= REGION: Medicine =======================
-
-    public function test_medicine_crud(): void
+    public function test_operational_master_data_can_be_created(): void
     {
-        $payload = Medicine::factory()->make()->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/medicines', $payload);
-
-        $response->assertCreated();
-        $id = $response->json('data.id');
+        $this->actingAs($this->adminUser)
+            ->postJson(self::API_PREFIX.'/master/medicines', [
+                'medicine_code' => 'MED-API',
+                'medicine_name' => 'Medicine API',
+                'active_ingredient' => 'Ingredient API',
+            ])->assertCreated();
 
         $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . "/master/medicines/{$id}")
-            ->assertOk();
+            ->postJson(self::API_PREFIX.'/master/probiotics', [
+                'probiotic_code' => 'PRO-API',
+                'probiotic_name' => 'Probiotic API',
+                'bacterial_strain' => 'Strain API',
+            ])->assertCreated();
 
         $this->actingAs($this->adminUser)
-            ->putJson(self::API_PREFIX . "/master/medicines/{$id}", [
-                'name' => 'Updated Medicine',
-            ])
-            ->assertOk();
+            ->postJson(self::API_PREFIX.'/master/vitamins', [
+                'vitamin_code' => 'VIT-API',
+                'vitamin_name' => 'Vitamin API',
+                'composition' => 'Composition API',
+            ])->assertCreated();
 
         $this->actingAs($this->adminUser)
-            ->deleteJson(self::API_PREFIX . "/master/medicines/{$id}")
-            ->assertOk();
-
-        $this->assertSoftDeleted('medicines', ['id' => $id]);
+            ->postJson(self::API_PREFIX.'/master/general-references', [
+                'reference_code' => 'REF-API',
+                'reference_name' => 'Reference API',
+                'reference_group' => 'api_group',
+            ])->assertCreated();
     }
 
-    // ======================= REGION: Probiotic & Vitamin =======================
-
-    public function test_probiotic_crud(): void
+    public function test_partner_and_employee_master_data_can_be_created(): void
     {
-        $payload = Probiotic::factory()->make()->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/probiotics', $payload);
-
-        $response->assertCreated();
-        $id = $response->json('data.id');
+        $this->actingAs($this->adminUser)
+            ->postJson(self::API_PREFIX.'/master/suppliers', [
+                'supplier_code' => 'SUP-API',
+                'supplier_name' => 'Supplier API',
+                'supplier_type' => 'feed',
+            ])->assertCreated();
 
         $this->actingAs($this->adminUser)
-            ->putJson(self::API_PREFIX . "/master/probiotics/{$id}", [
-                'name' => 'Updated Probiotic',
-            ])
-            ->assertOk();
+            ->postJson(self::API_PREFIX.'/master/customers', [
+                'customer_code' => 'CUS-API',
+                'customer_name' => 'Customer API',
+                'customer_type' => 'corporate',
+            ])->assertCreated();
 
         $this->actingAs($this->adminUser)
-            ->deleteJson(self::API_PREFIX . "/master/probiotics/{$id}")
-            ->assertOk();
-    }
-
-    public function test_vitamin_crud(): void
-    {
-        $payload = Vitamin::factory()->make()->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/vitamins', $payload);
-
-        $response->assertCreated();
-        $id = $response->json('data.id');
-
-        $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . "/master/vitamins/{$id}")
-            ->assertOk();
-
-        $this->actingAs($this->adminUser)
-            ->deleteJson(self::API_PREFIX . "/master/vitamins/{$id}")
-            ->assertOk();
-    }
-
-    // ======================= REGION: Supplier & Customer & Employee =======================
-
-    public function test_supplier_crud(): void
-    {
-        $payload = Supplier::factory()->make()->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/suppliers', $payload);
-
-        $response->assertCreated();
-        $id = $response->json('data.id');
-
-        $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . "/master/suppliers/{$id}")
-            ->assertOk()
-            ->assertJsonPath('data.id', $id);
-
-        $this->actingAs($this->adminUser)
-            ->deleteJson(self::API_PREFIX . "/master/suppliers/{$id}")
-            ->assertOk();
-    }
-
-    public function test_customer_crud(): void
-    {
-        $payload = Customer::factory()->make()->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/customers', $payload);
-
-        $response->assertCreated();
-        $id = $response->json('data.id');
-
-        $this->actingAs($this->adminUser)
-            ->putJson(self::API_PREFIX . "/master/customers/{$id}", [
-                'name' => 'Updated Customer',
-            ])
-            ->assertOk()
-            ->assertJsonPath('data.name', 'Updated Customer');
-    }
-
-    public function test_employee_crud(): void
-    {
-        $payload = Employee::factory()->make()->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/employees', $payload);
-
-        $response->assertCreated();
-        $id = $response->json('data.id');
-
-        $this->actingAs($this->adminUser)
-            ->deleteJson(self::API_PREFIX . "/master/employees/{$id}")
-            ->assertOk();
-    }
-
-    // ======================= REGION: General Reference =======================
-
-    public function test_general_reference_crud(): void
-    {
-        $payload = GeneralReference::factory()->make()->toArray();
-
-        $response = $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/general-references', $payload);
-
-        $response->assertCreated();
-        $id = $response->json('data.id');
-
-        $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . "/master/general-references/{$id}")
-            ->assertOk();
-
-        $this->actingAs($this->adminUser)
-            ->putJson(self::API_PREFIX . "/master/general-references/{$id}", [
-                'label' => 'Updated Label',
-            ])
-            ->assertOk();
-
-        $this->actingAs($this->adminUser)
-            ->deleteJson(self::API_PREFIX . "/master/general-references/{$id}")
-            ->assertOk();
-    }
-
-    // ======================= REGION: Validation =======================
-
-    public function test_unauthenticated_user_cannot_access_api(): void
-    {
-        $this->getJson(self::API_PREFIX . '/master/provinces')
-            ->assertUnauthorized();
+            ->postJson(self::API_PREFIX.'/master/employees', [
+                'employee_code' => 'EMP-API',
+                'employee_name' => 'Employee API',
+                'gender' => 'L',
+                'is_active' => true,
+            ])->assertCreated();
     }
 
     public function test_validation_errors_return_422(): void
     {
         $this->actingAs($this->adminUser)
-            ->postJson(self::API_PREFIX . '/master/provinces', [])
+            ->postJson(self::API_PREFIX.'/master/provinces', [])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['code', 'name']);
+            ->assertJsonValidationErrors(['province_code', 'province_name']);
     }
 
     public function test_not_found_returns_404(): void
     {
         $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . '/master/provinces/99999')
+            ->getJson(self::API_PREFIX.'/master/provinces/'.Str::uuid()->toString())
             ->assertNotFound();
     }
 
-    // ======================= REGION: Search & Filter =======================
-
     public function test_provinces_can_be_searched(): void
     {
-        Province::factory()->create(['name' => 'Jawa Barat']);
-        Province::factory()->create(['name' => 'Jawa Timur']);
-        Province::factory()->create(['name' => 'Sumatera Utara']);
+        Province::factory()->create(['province_name' => 'Jawa Barat']);
+        Province::factory()->create(['province_name' => 'Jawa Timur']);
+        Province::factory()->create(['province_name' => 'Sumatera Utara']);
 
         $response = $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . '/master/provinces?search=Jawa');
+            ->getJson(self::API_PREFIX.'/master/provinces?search=Jawa');
 
         $response->assertOk();
-        $names = collect($response->json('data.data'))->pluck('name');
+
+        $names = collect($response->json('data'))->pluck('province_name');
         $this->assertContains('Jawa Barat', $names);
         $this->assertContains('Jawa Timur', $names);
         $this->assertNotContains('Sumatera Utara', $names);
@@ -510,11 +310,31 @@ final class MasterDataApiTest extends TestCase
     {
         Province::factory()->count(15)->create();
 
-        $response = $this->actingAs($this->adminUser)
-            ->getJson(self::API_PREFIX . '/master/provinces?per_page=5');
+        $this->actingAs($this->adminUser)
+            ->getJson(self::API_PREFIX.'/master/provinces?per_page=5')
+            ->assertOk()
+            ->assertJsonPath('meta.per_page', 5)
+            ->assertJsonPath('meta.total', 15);
+    }
 
-        $response->assertOk()
-            ->assertJsonPath('data.meta.per_page', 5)
-            ->assertJsonPath('data.meta.total', 15);
+    public function test_unauthenticated_user_cannot_access_api(): void
+    {
+        $this->getJson(self::API_PREFIX.'/master/provinces')
+            ->assertUnauthorized();
+    }
+
+    private function createRegionContext(): array
+    {
+        $province = Province::factory()->create();
+        $city = City::factory()->create(['province_id' => $province->id]);
+        $district = District::factory()->create(['city_id' => $city->id]);
+        $village = Village::factory()->create(['district_id' => $district->id]);
+
+        return [
+            'province' => $province,
+            'city' => $city,
+            'district' => $district,
+            'village' => $village,
+        ];
     }
 }

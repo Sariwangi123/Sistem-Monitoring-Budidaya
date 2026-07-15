@@ -25,6 +25,8 @@
       "MasterData\\": "MasterData/",
       "CultureCycle\\": "CultureCycle/",
       "Activities\\": "Activities/",
+      "Harvest\\": "Harvest/",
+      "Finance\\": "Finance/",
       "Warehouse\\": "Warehouse/",
       "Database\\Factories\\": "database/factories/",
       "Database\\Seeders\\": "database/seeders/"

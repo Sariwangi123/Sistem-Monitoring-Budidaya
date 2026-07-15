@@ -17,7 +17,6 @@ final class DistrictFactory extends Factory
             'city_id' => \MasterData\Models\City::factory(),
             'district_code' => strtoupper(fake()->unique()->lexify('DIST???')),
             'district_name' => fake()->streetName(),
-            'description' => fake()->optional()->sentence(),
         ];
     }
 }

@@ -16,7 +16,8 @@ final class VitaminFactory extends Factory
             'uuid' => (string) Str::uuid(),
             'vitamin_code' => strtoupper(fake()->unique()->lexify('VIT???')),
             'vitamin_name' => fake()->unique()->word(),
-            'dosage' => fake()->randomElement(['250ml', '500ml', '1L', '100g', '500g']),
+            'composition' => fake()->word(),
+            'manufacturer' => fake()->company(),
             'description' => fake()->optional()->sentence(),
         ];
     }

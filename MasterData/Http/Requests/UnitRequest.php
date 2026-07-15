@@ -11,7 +11,6 @@ class UnitRequest extends BaseRequest
         $id = $this->route('id');
 
         return [
-            'unit_category' => ['required', 'string', 'max:50'],
             'unit_code' => [
                 'required',
                 'string',
@@ -19,7 +18,7 @@ class UnitRequest extends BaseRequest
                 Rule::unique('units', 'unit_code')->ignore($id),
             ],
             'unit_name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'symbol' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

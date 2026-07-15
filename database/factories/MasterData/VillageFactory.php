@@ -17,7 +17,6 @@ final class VillageFactory extends Factory
             'district_id' => \MasterData\Models\District::factory(),
             'village_code' => strtoupper(fake()->unique()->lexify('VIL???')),
             'village_name' => fake()->citySuffix(),
-            'description' => fake()->optional()->sentence(),
         ];
     }
 }

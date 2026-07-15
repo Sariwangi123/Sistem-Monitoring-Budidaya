@@ -11,7 +11,7 @@ class VillageRequest extends BaseRequest
         $id = $this->route('id');
 
         return [
-            'district_code' => ['required', 'string', 'exists:districts,district_code'],
+            'district_id' => ['required', 'integer', 'exists:districts,id'],
             'village_code' => [
                 'required',
                 'string',
@@ -20,7 +20,6 @@ class VillageRequest extends BaseRequest
             ],
             'village_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'postal_code' => ['nullable', 'string', 'max:10'],
         ];
     }
 }

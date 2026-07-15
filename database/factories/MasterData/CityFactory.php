@@ -17,7 +17,6 @@ final class CityFactory extends Factory
             'province_id' => \MasterData\Models\Province::factory(),
             'city_code' => strtoupper(fake()->unique()->lexify('CITY???')),
             'city_name' => fake()->city(),
-            'description' => fake()->optional()->sentence(),
         ];
     }
 }

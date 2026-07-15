@@ -15,8 +15,8 @@ final class PondAreaFactory extends Factory
         return [
             'uuid' => (string) Str::uuid(),
             'farm_id' => \MasterData\Models\Farm::factory(),
-            'area_code' => strtoupper(fake()->unique()->lexify('AREA???')),
-            'area_name' => fake()->word(),
+            'pond_area_code' => strtoupper(fake()->unique()->lexify('AREA???')),
+            'pond_area_name' => fake()->word(),
             'description' => fake()->optional()->sentence(),
         ];
     }

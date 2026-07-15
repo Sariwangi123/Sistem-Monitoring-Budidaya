@@ -13,8 +13,7 @@ class UnitResource extends BaseResource
             'uuid' => $this->uuid,
             'unit_code' => $this->unit_code,
             'unit_name' => $this->unit_name,
-            'unit_category' => $this->unit_category,
-            'description' => $this->description,
+            'symbol' => $this->symbol,
             ...$this->getAuditFields($request),
         ];
     }

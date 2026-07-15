@@ -19,7 +19,6 @@ final class CustomerFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'email' => fake()->unique()->safeEmail(),
             'address' => fake()->address(),
-            'description' => fake()->optional()->sentence(),
         ];
     }
 }

@@ -14,9 +14,9 @@ final class FishSpeciesFactory extends Factory
     {
         return [
             'uuid' => (string) Str::uuid(),
-            'species_code' => strtoupper(fake()->unique()->lexify('SP???')),
+            'fish_species_code' => strtoupper(fake()->unique()->lexify('SP???')),
+            'fish_species_name' => fake()->word(),
             'scientific_name' => fake()->unique()->word(),
-            'local_name' => fake()->word(),
             'description' => fake()->optional()->sentence(),
         ];
     }
