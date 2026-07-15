@@ -3,6 +3,7 @@
 namespace ReportAnalytics\Services;
 
 use Dashboard\Services\DashboardService;
+use Illuminate\Support\Facades\Log;
 use ReportAnalytics\Engines\UniversalReportEngine;
 use ReportAnalytics\Registry\ReportRegistry;
 use ReportAnalytics\Support\ReportDefinition;
@@ -107,6 +108,199 @@ final class ReportAnalyticsService
         ];
     }
 
+    public function definitionFor(string $reportId): ReportDefinition
+    {
+        $definition = $this->registry->get($reportId);
+
+        if (! $definition) {
+            abort(404, 'Report definition not found');
+        }
+
+        return $definition;
+    }
+
+    public function registry(array $roleSlugs, array $filters = []): array
+    {
+        return $this->respond('report.registry', $roleSlugs, $filters, fn (): array => [
+            'items' => array_map(
+                fn (ReportDefinition $definition): array => $definition->toArray(),
+                $this->filterDefinitions($this->registry->visibleForRoles($roleSlugs), $filters)
+            ),
+        ]);
+    }
+
+    public function registryDetail(string $reportId): array
+    {
+        $definition = $this->definitionFor($reportId);
+
+        return $this->respond('report.registry.detail', [], ['report_id' => $reportId], fn (): array => [
+            'item' => $definition->toArray(),
+        ]);
+    }
+
+    public function categoryReport(string $category, array $filters): array
+    {
+        $normalizedCategory = $this->normalizeCategory($category);
+
+        return $this->respond("report.{$normalizedCategory}", [], $filters, fn (): array => [
+            'category' => $normalizedCategory,
+            'reports' => array_map(
+                fn (ReportDefinition $definition): array => $definition->toArray(),
+                $this->definitionsForCategory($normalizedCategory)
+            ),
+            'filters' => $filters,
+            'summary' => [
+                'status' => 'Generated',
+                'read_only' => true,
+                'source_strategy' => 'service_layer_only',
+            ],
+            'sections' => $this->sectionsForCategory($normalizedCategory),
+        ]);
+    }
+
+    public function historical(array $filters): array
+    {
+        return $this->respond('report.historical', [], $filters, fn (): array => [
+            'category' => 'historical',
+            'period' => $filters['period'] ?? 'monthly',
+            'supported_periods' => ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'],
+            'filters' => $filters,
+            'trend' => [],
+            'summary' => [
+                'status' => 'Foundation Ready',
+                'read_only' => true,
+            ],
+        ]);
+    }
+
+    public function comparative(array $filters): array
+    {
+        return $this->respond('report.comparative', [], $filters, fn (): array => [
+            'category' => 'comparative',
+            'comparison_scope' => [
+                'farm_id' => $filters['farm_id'] ?? null,
+                'pond_id' => $filters['pond_id'] ?? null,
+                'culture_cycle_id' => $filters['culture_cycle_id'] ?? null,
+                'financial_period_id' => $filters['financial_period_id'] ?? null,
+            ],
+            'filters' => $filters,
+            'comparison' => [],
+            'summary' => [
+                'status' => 'Foundation Ready',
+                'read_only' => true,
+            ],
+        ]);
+    }
+
+    public function analytics(array $filters): array
+    {
+        return $this->respond('report.analytics', [], $filters, fn (): array => [
+            'category' => $filters['report_category'] ?? 'all',
+            'period' => $filters['period'] ?? null,
+            'summary' => [
+                'status' => 'Foundation Ready',
+                'read_only' => true,
+            ],
+            'trend' => [],
+            'comparison' => [],
+            'filters' => $filters,
+        ]);
+    }
+
+    public function generate(array $payload): array
+    {
+        $definition = $this->registry->get($payload['report_type']);
+
+        if (! $definition) {
+            abort(404, 'Report definition not found');
+        }
+
+        $format = $payload['export_format'];
+        $template = $payload['template'] ?? $definition->template;
+
+        if ($template !== $definition->template) {
+            abort(422, 'Template does not match report definition');
+        }
+
+        if (! in_array($format, $definition->supportedExportFormats, true)) {
+            abort(422, 'Export format is not supported by this report');
+        }
+
+        return $this->respond('report.generate', [], $payload, fn (): array => $this->engine->generate(new ReportRequest(
+            reportId: $definition->id,
+            format: $format,
+            locale: $payload['locale'] ?? 'id',
+            parameters: [
+                'filter' => $payload['filter'] ?? [],
+                'parameter' => $payload['parameter'] ?? [],
+            ]
+        )), 'Report generated as preview metadata.');
+    }
+
+    public function exportMetadata(string $reportId, array $filters): array
+    {
+        $definition = $this->registry->get($reportId);
+
+        if (! $definition) {
+            abort(404, 'Report definition not found');
+        }
+
+        $format = $filters['format'] ?? 'pdf';
+
+        if (! in_array($format, $definition->supportedExportFormats, true)) {
+            abort(422, 'Export format is not supported by this report');
+        }
+
+        return $this->respond('report.export.metadata', [], $filters, fn (): array => [
+            'report' => $definition->toArray(),
+            'format' => $format,
+            'adapter' => 'in_memory_metadata',
+            'production_file_export' => false,
+            'supported_export_formats' => $definition->supportedExportFormats,
+        ], 'Report export metadata retrieved.');
+    }
+
+    public function schedules(array $filters = []): array
+    {
+        return $this->respond('report.schedules.index', [], $filters, fn (): array => [
+            'items' => [],
+            'foundation' => [
+                'schedule_support' => 'contract_only',
+                'production_scheduler' => false,
+                'queue_job' => false,
+            ],
+        ], 'Report schedule foundation retrieved.');
+    }
+
+    public function createSchedule(array $payload): array
+    {
+        $definition = $this->registry->get($payload['report_id']);
+
+        if (! $definition) {
+            abort(404, 'Report definition not found');
+        }
+
+        return $this->respond('report.schedules.store', [], $payload, fn (): array => [
+            'uuid' => (string) str()->uuid(),
+            'report' => $definition->toArray(),
+            'frequency' => $payload['frequency'],
+            'export_format' => $payload['export_format'],
+            'timezone' => $payload['timezone'] ?? config('app.timezone'),
+            'filters' => $payload['filters'] ?? [],
+            'status' => 'Accepted',
+            'production_scheduler' => false,
+        ], 'Report schedule foundation accepted.');
+    }
+
+    public function deleteSchedule(string $uuid): array
+    {
+        return $this->respond('report.schedules.destroy', [], ['uuid' => $uuid], fn (): array => [
+            'uuid' => $uuid,
+            'deleted' => true,
+            'production_scheduler' => false,
+        ], 'Report schedule foundation deleted.');
+    }
+
     /** @return array<int, array<string, mixed>> */
     private function categoriesForRoles(array $roleSlugs): array
     {
@@ -114,6 +308,93 @@ final class ReportAnalyticsService
             $this->categoryDefinitions(),
             fn (array $category): bool => $this->isAllowed($roleSlugs, $category['allowed_roles'])
         ));
+    }
+
+    /** @param array<int, ReportDefinition> $definitions */
+    private function filterDefinitions(array $definitions, array $filters): array
+    {
+        $category = isset($filters['report_category']) ? $this->normalizeCategory((string) $filters['report_category']) : null;
+        $search = str((string) ($filters['search'] ?? ''))->lower()->toString();
+
+        return array_values(array_filter($definitions, function (ReportDefinition $definition) use ($category, $search): bool {
+            if ($category && $definition->category !== $category) {
+                return false;
+            }
+
+            if ($search === '') {
+                return true;
+            }
+
+            return str_contains(strtolower($definition->name), $search)
+                || str_contains(strtolower($definition->category), $search)
+                || str_contains(strtolower($definition->sourceModule), $search);
+        }));
+    }
+
+    /** @return array<int, ReportDefinition> */
+    private function definitionsForCategory(string $category): array
+    {
+        return array_values(array_filter(
+            $this->registry->all(),
+            fn (ReportDefinition $definition): bool => $definition->category === $category
+        ));
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function sectionsForCategory(string $category): array
+    {
+        $sections = match ($category) {
+            'operational' => ['feeding', 'treatment', 'sampling', 'maintenance', 'daily_activities'],
+            'production' => ['biomass', 'growth', 'sr', 'fcr', 'adg', 'production_summary'],
+            'inventory' => ['current_stock', 'stock_movement', 'stock_adjustment', 'inventory_valuation', 'low_stock'],
+            'harvest' => ['harvest_planning', 'harvest_summary', 'grade_distribution', 'yield', 'delivery_summary'],
+            'financial' => ['expense', 'revenue', 'profit_loss', 'cost_of_production', 'cost_per_kg', 'roi'],
+            'executive' => ['executive_summary', 'kpi_summary', 'production_summary', 'inventory_summary', 'harvest_summary', 'financial_summary'],
+            'kpi' => ['kpi_list', 'trend', 'comparison'],
+            'audit' => ['login_activity', 'user_activity', 'approval_history', 'transaction_history', 'audit_trail'],
+            default => ['summary'],
+        };
+
+        return array_map(fn (string $section): array => [
+            'key' => $section,
+            'title' => str($section)->headline()->toString(),
+            'status' => 'Foundation Ready',
+            'items' => [],
+        ], $sections);
+    }
+
+    private function normalizeCategory(string $category): string
+    {
+        return $category === 'finance' ? 'financial' : $category;
+    }
+
+    private function respond(string $scope, array $roleSlugs, array $filters, callable $callback, string $message = 'Success'): array
+    {
+        $startedAt = microtime(true);
+        $data = $callback();
+        $executionTimeMs = round((microtime(true) - $startedAt) * 1000, 2);
+
+        Log::info('report_analytics.endpoint.executed', [
+            'scope' => $scope,
+            'roles' => $roleSlugs,
+            'report_type' => $filters['report_type'] ?? $filters['report_id'] ?? null,
+            'export_format' => $filters['export_format'] ?? $filters['format'] ?? null,
+            'execution_time_ms' => $executionTimeMs,
+            'file_size' => null,
+            'generated_at' => now()->toISOString(),
+        ]);
+
+        return [
+            'data' => $data,
+            'message' => $message,
+            'meta' => [
+                'read_only' => true,
+                'generate_never_store' => true,
+                'execution_time_ms' => $executionTimeMs,
+                'file_size' => null,
+                'generated_at' => now()->toISOString(),
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

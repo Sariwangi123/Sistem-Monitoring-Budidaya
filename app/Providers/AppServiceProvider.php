@@ -188,6 +188,10 @@ final class AppServiceProvider extends ServiceProvider
         Gate::define('view-dashboard', [DashboardPolicy::class, 'view']);
         Gate::define('clear-dashboard-cache', [DashboardPolicy::class, 'clearCache']);
         Gate::define('view-reports', [ReportAnalyticsPolicy::class, 'view']);
+        Gate::define('view-report-category', [ReportAnalyticsPolicy::class, 'viewCategory']);
+        Gate::define('generate-report', [ReportAnalyticsPolicy::class, 'generate']);
+        Gate::define('export-report', [ReportAnalyticsPolicy::class, 'export']);
+        Gate::define('schedule-report', [ReportAnalyticsPolicy::class, 'schedule']);
 
         Gate::before(function (User $user): ?bool {
             return $user->roles()->where('slug', 'super-admin')->exists() ? true : null;

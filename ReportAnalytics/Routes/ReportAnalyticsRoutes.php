@@ -13,6 +13,24 @@ final class ReportAnalyticsRoutes
             Route::get('/', [ReportAnalyticsController::class, 'index']);
             Route::get('categories', [ReportAnalyticsController::class, 'categories']);
             Route::get('workspaces', [ReportAnalyticsController::class, 'workspaces']);
+            Route::get('report-registry', [ReportAnalyticsController::class, 'registry']);
+            Route::get('report-registry/{report}', [ReportAnalyticsController::class, 'registryDetail']);
+            Route::get('operational', [ReportAnalyticsController::class, 'operational']);
+            Route::get('production', [ReportAnalyticsController::class, 'production']);
+            Route::get('inventory', [ReportAnalyticsController::class, 'inventory']);
+            Route::get('harvest', [ReportAnalyticsController::class, 'harvest']);
+            Route::get('finance', [ReportAnalyticsController::class, 'finance']);
+            Route::get('executive', [ReportAnalyticsController::class, 'executive']);
+            Route::get('kpi', [ReportAnalyticsController::class, 'kpi']);
+            Route::get('audit', [ReportAnalyticsController::class, 'audit']);
+            Route::get('historical', [ReportAnalyticsController::class, 'historical']);
+            Route::get('comparative', [ReportAnalyticsController::class, 'comparative']);
+            Route::get('analytics', [ReportAnalyticsController::class, 'analytics']);
+            Route::post('generate', [ReportAnalyticsController::class, 'generate']);
+            Route::get('export/{report}', [ReportAnalyticsController::class, 'export']);
+            Route::get('schedules', [ReportAnalyticsController::class, 'schedules']);
+            Route::post('schedules', [ReportAnalyticsController::class, 'storeSchedule']);
+            Route::delete('schedules/{uuid}', [ReportAnalyticsController::class, 'destroySchedule']);
         });
     }
 }
