@@ -94,6 +94,9 @@ use MasterData\Models\Village;
 use MasterData\Policies\MasterDataPolicy;
 use Modules\Notifications\Models\NotificationTemplate;
 use Modules\Notifications\Observers\NotificationTemplateObserver;
+use Modules\Notifications\Policies\NotificationPolicy;
+use Modules\Notifications\Repositories\Contracts\NotificationRepositoryInterface;
+use Modules\Notifications\Repositories\NotificationRepository;
 use Modules\Permissions\Models\Permission;
 use Modules\Permissions\Observers\PermissionObserver;
 use Modules\Roles\Models\Role;
@@ -133,6 +136,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(FinanceCostAllocationRepositoryInterface::class, FinanceCostAllocationRepository::class);
         $this->app->bind(FinanceProfitCalculationRepositoryInterface::class, FinanceProfitCalculationRepository::class);
         $this->app->bind(FinanceFinancialSummaryRepositoryInterface::class, FinanceFinancialSummaryRepository::class);
+        $this->app->bind(NotificationRepositoryInterface::class, NotificationRepository::class);
         $this->app->singleton(ReportRegistry::class);
         $this->app->bind(DataCollectorInterface::class, ServiceLayerDataCollector::class);
         $this->app->bind(RenderingEngineInterface::class, ArrayRenderingEngine::class);
@@ -192,6 +196,7 @@ final class AppServiceProvider extends ServiceProvider
         Gate::define('generate-report', [ReportAnalyticsPolicy::class, 'generate']);
         Gate::define('export-report', [ReportAnalyticsPolicy::class, 'export']);
         Gate::define('schedule-report', [ReportAnalyticsPolicy::class, 'schedule']);
+        Gate::define('view-notifications', [NotificationPolicy::class, 'view']);
 
         Gate::before(function (User $user): ?bool {
             return $user->roles()->where('slug', 'super-admin')->exists() ? true : null;
