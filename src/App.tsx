@@ -5,13 +5,15 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage').then((module) =
 const ReportAnalyticsPage = lazy(() => import('./pages/ReportAnalyticsPage').then((module) => ({ default: module.ReportAnalyticsPage })));
 const NotificationCenterPage = lazy(() => import('./pages/NotificationCenterPage').then((module) => ({ default: module.NotificationCenterPage })));
 const AdministrationPage = lazy(() => import('./pages/AdministrationPage').then((module) => ({ default: module.AdministrationPage })));
+const MasterDataPage = lazy(() => import('./pages/MasterDataPage').then((module) => ({ default: module.MasterDataPage })));
 
-export type AppPage = 'dashboard' | 'reports' | 'notifications' | 'administration';
+export type AppPage = 'dashboard' | 'reports' | 'notifications' | 'administration' | 'master-data';
 
 function currentPageFromHash(): AppPage {
   if (window.location.hash === '#/reports') return 'reports';
   if (window.location.hash === '#/notifications') return 'notifications';
   if (window.location.hash === '#/administration') return 'administration';
+  if (window.location.hash === '#/master-data') return 'master-data';
   return 'dashboard';
 }
 
@@ -29,14 +31,14 @@ export function App() {
   }, []);
 
   function handleNavigate(page: AppPage) {
-    window.location.hash = page === 'reports' ? '#/reports' : page === 'notifications' ? '#/notifications' : page === 'administration' ? '#/administration' : '#/dashboard';
+    window.location.hash = page === 'reports' ? '#/reports' : page === 'notifications' ? '#/notifications' : page === 'administration' ? '#/administration' : page === 'master-data' ? '#/master-data' : '#/dashboard';
     setCurrentPage(page);
   }
 
   return (
     <AppLayout currentPage={currentPage} onNavigate={handleNavigate}>
       <Suspense fallback={<div className="h-40 animate-pulse rounded-md border border-slate-200 bg-white" />}>
-        {currentPage === 'reports' ? <ReportAnalyticsPage /> : currentPage === 'notifications' ? <NotificationCenterPage /> : currentPage === 'administration' ? <AdministrationPage /> : <DashboardPage />}
+        {currentPage === 'reports' ? <ReportAnalyticsPage /> : currentPage === 'notifications' ? <NotificationCenterPage /> : currentPage === 'administration' ? <AdministrationPage /> : currentPage === 'master-data' ? <MasterDataPage /> : <DashboardPage />}
       </Suspense>
     </AppLayout>
   );

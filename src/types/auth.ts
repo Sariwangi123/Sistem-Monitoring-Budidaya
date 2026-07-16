@@ -9,6 +9,7 @@ export type AuthUser = {
   uuid: string;
   name: string;
   email: string;
+  permissions?: string[];
   roles?: Array<{
     id?: number;
     name?: string;

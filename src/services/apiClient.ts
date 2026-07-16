@@ -1,7 +1,26 @@
-import type { ApiErrorResponse, ApiSuccessResponse } from '../types/api';
+import type { ApiSuccessResponse } from '../types/api';
 import { useAuthStore } from '../stores/authStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost/api/v1';
+
+type ApiRawResponse<T> = {
+  success?: boolean;
+  message?: string;
+  data?: T;
+  meta?: Record<string, unknown>;
+  links?: Record<string, unknown>;
+  errors?: Record<string, string[]>;
+};
+
+export class ApiClientError extends Error {
+  errors?: Record<string, string[]>;
+
+  constructor(message: string, errors?: Record<string, string[]>) {
+    super(message);
+    this.name = 'ApiClientError';
+    this.errors = errors;
+  }
+}
 
 export async function apiClient<T>(path: string, init: RequestInit = {}): Promise<ApiSuccessResponse<T>> {
   const token = useAuthStore.getState().session?.token;
@@ -19,11 +38,21 @@ export async function apiClient<T>(path: string, init: RequestInit = {}): Promis
     headers,
   });
 
-  const payload = (await response.json()) as ApiSuccessResponse<T> | ApiErrorResponse;
+  const payload = (await response.json()) as ApiRawResponse<T>;
 
   if (!response.ok || !payload.success) {
-    throw new Error(payload.message);
+    if (response.ok && payload.success === undefined && 'data' in payload) {
+      return {
+        success: true,
+        message: payload.message ?? 'Success',
+        data: payload.data as T,
+        meta: payload.meta,
+        links: payload.links,
+      };
+    }
+
+    throw new ApiClientError(payload.message ?? 'Request failed', 'errors' in payload ? payload.errors : undefined);
   }
 
-  return payload;
+  return payload as ApiSuccessResponse<T>;
 }

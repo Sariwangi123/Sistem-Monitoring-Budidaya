@@ -3,6 +3,7 @@ export type ApiSuccessResponse<T> = {
   message: string;
   data: T;
   meta?: Record<string, unknown>;
+  links?: Record<string, unknown>;
 };
 
 export type ApiErrorResponse = {

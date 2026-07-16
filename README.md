@@ -22,7 +22,7 @@ AI Recommendation belum termasuk MVP v1.0 dan belum diimplementasikan.
 - Dashboard, Report Analytics, Notification
 - System Administration
 
-Frontend workspace tersedia untuk Dashboard, Report Analytics, Notification Center, dan System Administration. Master Data frontend masih tercatat sebagai follow-up, sementara API backend Master Data sudah selesai dan terverifikasi.
+Frontend workspace tersedia untuk Master Data MVP, Dashboard, Report Analytics, Notification Center, dan System Administration. Master Data frontend MVP mencakup Companies, Farms, Pond Areas, Ponds, Fish Species, Fish Strains, Feed Brands, Feed Categories, Feed Types, Units, Suppliers, Provinces, Cities, Districts, dan Villages melalui route `#/master-data`; resource post-MVP seperti Customers, Employees, Medicines, Probiotics, Vitamins, dan General References tetap ditunda.
 
 ## Local Setup
 

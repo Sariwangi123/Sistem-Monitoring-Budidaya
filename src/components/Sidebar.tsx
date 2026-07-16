@@ -9,7 +9,7 @@ const items = [
   { label: 'Settings', icon: Settings },
   { label: 'Notifications', icon: Bell, page: 'notifications' as AppPage },
   { label: 'Administration', icon: Settings, page: 'administration' as AppPage },
-  { label: 'Master Data', icon: Database },
+  { label: 'Master Data', icon: Database, page: 'master-data' as AppPage },
 ];
 
 type SidebarProps = {
