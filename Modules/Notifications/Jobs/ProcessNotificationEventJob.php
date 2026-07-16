@@ -19,7 +19,10 @@ final class ProcessNotificationEventJob implements ShouldQueue
 
     public int $tries = 3;
 
-    public int $backoff = 60;
+    public function backoff(): array
+    {
+        return [60, 120, 180];
+    }
 
     public function __construct(private DomainEventInterface $event)
     {
@@ -28,5 +31,15 @@ final class ProcessNotificationEventJob implements ShouldQueue
     public function handle(NotificationEventEngine $engine): void
     {
         $engine->process($this->event);
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        \Illuminate\Support\Facades\Log::warning('Notification queue job exhausted retries.', [
+            'event_name' => $this->event->eventName(),
+            'correlation_id' => $this->event->correlationId(),
+            'exception' => $exception::class,
+            'dead_letter_metadata_only' => true,
+        ]);
     }
 }

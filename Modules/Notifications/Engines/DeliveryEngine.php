@@ -9,18 +9,23 @@ use Modules\Notifications\Repositories\Contracts\NotificationRepositoryInterface
 use Modules\Notifications\Support\DeliveryResult;
 use Modules\Notifications\Support\NotificationDefinition;
 use Modules\Notifications\Support\NotificationRecipient;
+use Modules\Notifications\Support\NotificationRetentionPolicy;
+use Modules\Notifications\Services\NotificationAuditLogger;
 use Throwable;
 
 final class DeliveryEngine
 {
     public function __construct(
         private ChannelResolverInterface $channels,
-        private NotificationRepositoryInterface $notifications
+        private NotificationRepositoryInterface $notifications,
+        private NotificationRetentionPolicy $retention,
+        private NotificationAuditLogger $audit
     ) {
     }
 
     public function deliver(NotificationDefinition $definition, DomainEventInterface $event, NotificationRecipient $recipient, string $channel): DeliveryResult
     {
+        $started = microtime(true);
         $record = $this->notifications->createRecord([
             'event_name' => $event->eventName(),
             'source_module' => $event->sourceModule(),
@@ -40,6 +45,9 @@ final class DeliveryEngine
                 'event_payload' => $event->payload(),
                 'template' => $definition->templateKey,
                 'version' => $definition->version,
+                'delivery' => ['status' => 'pending', 'external_delivery_enabled' => false],
+                'retry' => $definition->retryPolicy->toArray(),
+                'retention' => $this->retention->metadata(),
             ],
         ]);
 
@@ -49,29 +57,54 @@ final class DeliveryEngine
             'metadata' => ['stage' => 'queued'],
         ]);
 
+        $record = $this->notifications->updateRecordStatus($record, 'processing', [
+            'delivery' => ['status' => 'processing', 'started_at' => now()->toIso8601String()],
+        ], incrementAttempts: true);
+        $this->notifications->addHistory($record, [
+            'status' => 'processing',
+            'attempt' => $record->attempts,
+            'metadata' => ['stage' => 'delivery_started'],
+        ]);
+
         try {
             $adapter = $this->channels->resolve($channel);
             $result = $adapter->deliver($definition, $event, $recipient);
 
-            $record = $this->notifications->updateRecordStatus($record, $result->status, $result->metadata);
+            $record = $this->notifications->updateRecordStatus($record, $result->status, [
+                'delivery' => [
+                    'status' => $result->status,
+                    'completed_at' => now()->toIso8601String(),
+                    'metadata' => $result->metadata,
+                ],
+            ]);
             $this->notifications->addHistory($record, [
                 'status' => $result->status,
                 'attempt' => $record->attempts,
                 'metadata' => $result->metadata,
                 'delivered_at' => $result->status === 'delivered' ? now() : null,
             ]);
+            $this->audit->delivery($record, $result->status, $started, ['event_name' => $event->eventName()]);
 
             return $result;
         } catch (Throwable $exception) {
-            $status = $record->attempts + 1 < $definition->retryPolicy->maxAttempts ? 'retry' : 'failed';
+            $status = $record->attempts < $definition->retryPolicy->maxAttempts ? 'retry' : 'failed';
             $record = $this->notifications->updateRecordStatus($record, $status, [
-                'retry_policy' => $definition->retryPolicy->toArray(),
+                'retry' => [
+                    ...$definition->retryPolicy->toArray(),
+                    'current_attempt' => $record->attempts,
+                    'next_backoff_seconds' => $definition->retryPolicy->backoffSchedule()[$record->attempts - 1] ?? null,
+                ],
+                'dead_letter' => $status === 'failed' ? [
+                    'recorded_at' => now()->toIso8601String(),
+                    'automatic_replay_enabled' => false,
+                ] : null,
             ], $exception->getMessage());
             $this->notifications->addHistory($record, [
                 'status' => $status,
                 'attempt' => $record->attempts,
                 'metadata' => ['exception' => $exception::class],
             ]);
+            $this->audit->delivery($record, $status, $started, ['event_name' => $event->eventName(), 'exception' => $exception::class]);
 
             throw DeliveryFailedException::forChannel($channel, $exception);
         }

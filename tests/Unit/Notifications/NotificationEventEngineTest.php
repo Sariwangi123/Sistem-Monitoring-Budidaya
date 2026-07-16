@@ -68,6 +68,8 @@ final class NotificationEventEngineTest extends TestCase
         $this->assertSame('Warehouse', $result['source_module']);
         $this->assertSame(1, $result['recipient_count']);
         $this->assertSame('delivered', $result['results'][0]['status']);
+        $this->assertSame(3, $result['policy']['retry']['max_attempts']);
+        $this->assertFalse($result['policy']['external_delivery_enabled']);
 
         $this->assertDatabaseHas('notification_records', [
             'event_name' => 'inventory.low_stock_detected',
@@ -77,7 +79,17 @@ final class NotificationEventEngineTest extends TestCase
             'status' => 'delivered',
         ]);
         $this->assertSame(1, NotificationRecord::query()->count());
-        $this->assertSame(2, NotificationHistory::query()->count());
+        $this->assertSame(3, NotificationHistory::query()->count());
+    }
+
+    public function test_retry_policy_is_bounded_and_exposes_progressive_backoff(): void
+    {
+        $policy = new RetryPolicy(3, 60);
+
+        $this->assertSame([60, 120, 180], $policy->backoffSchedule());
+        $this->expectException(\InvalidArgumentException::class);
+
+        new RetryPolicy(4);
     }
 
     public function test_unregistered_event_throws_custom_exception(): void

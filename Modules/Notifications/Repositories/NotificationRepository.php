@@ -30,8 +30,11 @@ final class NotificationRepository implements NotificationRepositoryInterface
             'reminder_count' => 0,
             'history_count' => $this->history->newQuery()->count(),
             'pending_count' => $this->record->newQuery()->where('status', 'pending')->count(),
+            'processing_count' => $this->record->newQuery()->where('status', 'processing')->count(),
             'delivered_count' => $this->record->newQuery()->where('status', 'delivered')->count(),
             'failed_count' => $this->record->newQuery()->where('status', 'failed')->count(),
+            'retry_count' => $this->record->newQuery()->where('status', 'retry')->count(),
+            'dead_letter_count' => $this->record->newQuery()->where('status', 'failed')->whereNotNull('last_error')->count(),
             'active_template_count' => $this->template->newQuery()->where('is_active', true)->count(),
         ];
     }
@@ -155,13 +158,13 @@ final class NotificationRepository implements NotificationRepositoryInterface
         return $this->record->newQuery()->create($payload);
     }
 
-    public function updateRecordStatus(NotificationRecord $record, string $status, array $metadata = [], ?string $error = null): NotificationRecord
+    public function updateRecordStatus(NotificationRecord $record, string $status, array $metadata = [], ?string $error = null, bool $incrementAttempts = false): NotificationRecord
     {
         $record->forceFill([
             'status' => $status,
             'last_error' => $error,
-            'metadata' => array_replace($record->metadata ?? [], $metadata),
-            'attempts' => $record->attempts + 1,
+            'metadata' => array_replace_recursive($record->metadata ?? [], $metadata),
+            'attempts' => $incrementAttempts ? $record->attempts + 1 : $record->attempts,
             'delivered_at' => $status === 'delivered' ? now() : $record->delivered_at,
         ])->save();
 

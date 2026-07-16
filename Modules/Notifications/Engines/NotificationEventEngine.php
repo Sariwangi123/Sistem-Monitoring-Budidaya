@@ -3,13 +3,12 @@
 namespace Modules\Notifications\Engines;
 
 use Modules\Notifications\Contracts\DomainEventInterface;
-use Modules\Notifications\Registry\NotificationRegistry;
 use Modules\Notifications\Resolvers\Contracts\RecipientResolverInterface;
 
 final class NotificationEventEngine
 {
     public function __construct(
-        private NotificationRegistry $registry,
+        private NotificationPolicyEngine $policies,
         private RecipientResolverInterface $recipients,
         private DeliveryEngine $delivery
     ) {
@@ -18,7 +17,7 @@ final class NotificationEventEngine
     /** @return array<string, mixed> */
     public function process(DomainEventInterface $event): array
     {
-        $definition = $this->registry->get($event->eventName());
+        $definition = $this->policies->resolve($event);
         $recipients = $this->recipients->resolve($definition, $event);
         $results = [];
 
@@ -37,6 +36,11 @@ final class NotificationEventEngine
             'notification_type' => $definition->notificationType,
             'recipient_count' => count($recipients),
             'channel_count' => count($definition->channels),
+            'policy' => [
+                'priority' => $definition->priority,
+                'retry' => $definition->retryPolicy->toArray(),
+                'external_delivery_enabled' => false,
+            ],
             'results' => $results,
         ];
     }

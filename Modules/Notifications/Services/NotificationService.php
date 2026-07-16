@@ -22,14 +22,17 @@ final class NotificationService
         private NotificationRepositoryInterface $notifications,
         private NotificationRegistry $registry,
         private ChannelResolverInterface $channels,
-        private NotificationQueueService $queue
+        private NotificationQueueService $queue,
+        private NotificationCacheService $cache,
+        private NotificationMetricsService $metrics
     ) {
     }
 
     /** @param array<int, string> $roleSlugs */
     public function overview(array $roleSlugs): array
     {
-        return [
+        return $this->cache->overview($roleSlugs, function () use ($roleSlugs): array {
+            return [
             'module' => [
                 'key' => 'notification',
                 'title' => 'Notification Center',
@@ -69,6 +72,8 @@ final class NotificationService
                 ),
             ],
             'queue' => $this->queue->metadata(),
+            'engine_health' => $this->metrics->health(),
+            'cache' => $this->cache->metadata(),
             'architecture' => [
                 'controller' => 'Modules\\Notifications\\Controllers\\NotificationController',
                 'service' => self::class,
@@ -91,7 +96,8 @@ final class NotificationService
                 'business_module_integration_deferred_to_next_part',
                 'external_channel_delivery_disabled',
             ],
-        ];
+            ];
+        });
     }
 
     public function list(User $user, array $filters): LengthAwarePaginator
@@ -127,6 +133,7 @@ final class NotificationService
             'read_at' => now(),
         ]);
         $this->logAction($user, 'mark_as_read', $record->uuid, $started, 'success');
+        $this->cache->forgetUser((string) $user->uuid);
 
         return $record->refresh();
     }
@@ -136,6 +143,7 @@ final class NotificationService
         $started = microtime(true);
         $affected = $this->notifications->markAllReadableAsRead($user);
         $this->logAction($user, 'mark_all_as_read', null, $started, 'success');
+        $this->cache->forgetUser((string) $user->uuid);
 
         return ['updated_count' => $affected];
     }
@@ -154,6 +162,7 @@ final class NotificationService
             'metadata' => ['action' => 'archive'],
         ]);
         $this->logAction($user, 'archive', $record->uuid, $started, 'success');
+        $this->cache->forgetUser((string) $user->uuid);
 
         return $record->refresh();
     }
@@ -163,6 +172,7 @@ final class NotificationService
         $started = microtime(true);
         $affected = $this->notifications->archiveAllRead($user);
         $this->logAction($user, 'archive_all_read', null, $started, 'success');
+        $this->cache->forgetUser((string) $user->uuid);
 
         return ['updated_count' => $affected];
     }
@@ -180,6 +190,7 @@ final class NotificationService
 
         $this->notifications->deleteRecord($record);
         $this->logAction($user, 'delete', $record->uuid, $started, 'success');
+        $this->cache->forgetUser((string) $user->uuid);
 
         return ['deleted' => true];
     }
@@ -187,7 +198,7 @@ final class NotificationService
     public function preferences(User $user): NotificationPreference
     {
         $started = microtime(true);
-        $preference = $this->notifications->preferenceForUser($user);
+        $preference = $this->cache->preference((string) $user->uuid, fn (): NotificationPreference => $this->notifications->preferenceForUser($user));
         $this->logAction($user, 'preferences', null, $started, 'success');
 
         return $preference;
@@ -197,6 +208,7 @@ final class NotificationService
     {
         $started = microtime(true);
         $preference = $this->notifications->updatePreference($user, $payload);
+        $this->cache->forgetUser((string) $user->uuid);
         $this->logAction($user, 'update_preferences', null, $started, 'success');
 
         return $preference;
@@ -214,7 +226,7 @@ final class NotificationService
     public function statistics(User $user, array $filters): array
     {
         $started = microtime(true);
-        $statistics = $this->notifications->statisticsForUser($user, $filters);
+        $statistics = $this->cache->statistics((string) $user->uuid, $filters, fn (): array => $this->notifications->statisticsForUser($user, $filters));
         $this->logAction($user, 'statistics', null, $started, 'success');
 
         return $statistics;
@@ -236,31 +248,34 @@ final class NotificationService
             ],
         ]);
         $this->logAction($user, 'retry', $record->uuid, $started, 'success');
+        $this->cache->forgetUser((string) $user->uuid);
 
         return $record->refresh();
     }
 
     public function registry(): array
     {
-        return [
+        return $this->cache->registry(function (): array {
+            return [
             'definitions' => array_map(
                 fn ($definition): array => $definition->toArray(),
                 $this->registry->all()
             ),
             'definition_count' => count($this->registry->all()),
-        ];
+            ];
+        });
     }
 
     public function templates(): array
     {
-        return array_map(fn ($template): array => [
+        return $this->cache->templates(fn (): array => array_map(fn ($template): array => [
             'id' => $template->uuid,
             'channel' => $template->channel,
             'name' => $template->name,
             'subject' => $template->subject,
             'body' => $template->body,
             'is_active' => $template->is_active,
-        ], $this->notifications->activeTemplates());
+        ], $this->notifications->activeTemplates()));
     }
 
     public function exportMetadata(User $user, array $filters): array

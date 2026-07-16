@@ -65,6 +65,7 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Added Notification Part 2 event-driven architecture foundation with immutable Domain Event contract and implementation, sample events, Event Bus abstraction, Notification Registry, Notification Definition metadata, Recipient Resolver, Channel Resolver, In-App channel adapter, Delivery Engine, queue/job foundation, Retry Policy, delivery status workflow, notification record/history foundation, template abstraction, service container bindings, custom exceptions, and unit/feature tests.
 - Added Notification Part 3 REST API layer with Notification Center list, detail, read/read-all, archive/archive-all, delete, preferences, history, search, statistics, retry, registry, templates, export metadata endpoints, Form Request validation, API Resources, user-scoped repository queries, status transition validation, RBAC policies, action logging, preference storage, and feature tests.
 - Added Notification Part 4 frontend Notification Center with lazy-loaded hash route, sidebar and navbar unread badge integration, user-scoped three-panel workspace, navigation, search, filters, sorting, pagination, statistics, detail actions, history, preferences, responsive states, and React Query service-backed mutations.
+- Added Notification Part 5 engine hardening with policy validation, queue retry backoff, pending-to-processing delivery lifecycle, delivery/retry/dead-letter/retention metadata, notification audit logging, engine health metrics, scoped cache strategy, custom policy and queue exceptions, and Notification unit/feature coverage.
 
 ## Fixed
 
@@ -261,6 +262,16 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
   - ✅ `npm run build` — TypeScript and Vite production build passed; Notification Center is emitted as a lazy-loaded chunk.
   - ✅ `npm run lint` — ESLint passed with no errors.
   - ✅ Notification Part 4 frontend completed and is ready for review and manual Git commit; Notification remains in progress for Part 5.
+- Ran Notification Part 5 engine hardening verification (2026-07-16):
+  - ✅ `docker compose exec app composer dump-autoload` — 6744 classes, optimized autoload regenerated.
+  - ✅ `docker compose exec app php artisan route:list --path=api/v1/notifications` — 17 Notification routes registered.
+  - ✅ Notification-focused tests — 15 passed, 88 assertions.
+  - ✅ `docker compose exec app php artisan test` — 79 passed, 645 assertions, 97.63 seconds.
+  - ✅ `docker compose exec app php artisan about` — Laravel 12.63.0, PHP 8.4.23, PostgreSQL, Redis cache, database queue, Asia/Jakarta.
+  - ✅ `docker compose exec app php artisan migrate:status` — 66 migrations Ran; no new migration required.
+  - ✅ `npm run build` — TypeScript and Vite production build passed.
+  - ✅ `npm run lint` — ESLint passed; TypeScript validation runs through `npm run build` because no separate type-check script is configured.
+  - ✅ Notification Part 5 engine hardening completed and is ready for review and manual Git commit; Notification remains in progress for final verification.
 
 ## Planned
 

@@ -39,7 +39,7 @@ interface NotificationRepositoryInterface
     public function createRecord(array $payload): \Modules\Notifications\Models\NotificationRecord;
 
     /** @param array<string, mixed> $metadata */
-    public function updateRecordStatus(\Modules\Notifications\Models\NotificationRecord $record, string $status, array $metadata = [], ?string $error = null): \Modules\Notifications\Models\NotificationRecord;
+    public function updateRecordStatus(\Modules\Notifications\Models\NotificationRecord $record, string $status, array $metadata = [], ?string $error = null, bool $incrementAttempts = false): \Modules\Notifications\Models\NotificationRecord;
 
     /** @param array<string, mixed> $payload */
     public function addHistory(\Modules\Notifications\Models\NotificationRecord $record, array $payload): \Modules\Notifications\Models\NotificationHistory;
