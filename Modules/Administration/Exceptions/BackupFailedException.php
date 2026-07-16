@@ -2,8 +2,6 @@
 
 namespace Modules\Administration\Exceptions;
 
-use RuntimeException;
-
-final class BackupFailedException extends RuntimeException
+final class BackupFailedException extends AdministrationException
 {
 }

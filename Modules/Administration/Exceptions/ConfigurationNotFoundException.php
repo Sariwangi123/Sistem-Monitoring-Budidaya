@@ -2,9 +2,7 @@
 
 namespace Modules\Administration\Exceptions;
 
-use RuntimeException;
-
-final class ConfigurationNotFoundException extends RuntimeException
+final class ConfigurationNotFoundException extends AdministrationException
 {
     public static function forCategory(string $category): self
     {

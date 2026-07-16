@@ -2,8 +2,6 @@
 
 namespace Modules\Administration\Exceptions;
 
-use RuntimeException;
-
-final class IntegrationException extends RuntimeException
+final class IntegrationException extends AdministrationException
 {
 }

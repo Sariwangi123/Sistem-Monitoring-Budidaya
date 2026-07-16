@@ -33,6 +33,7 @@ final class AdministrationService
             'integration_management' => $engine['integration'],
             'health' => $engine['health'],
             'configuration_engine' => $engine['configuration'],
+            'engine_metrics' => $engine['metrics'],
             'environment' => $engine['environment'],
         ];
     }

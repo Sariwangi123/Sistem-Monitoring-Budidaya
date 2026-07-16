@@ -3,6 +3,7 @@
 namespace Tests\Feature\Administration;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
 use Modules\Roles\Models\Role;
@@ -12,6 +13,16 @@ use Tests\TestCase;
 final class AdministrationFoundationApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Cache::forget('administration:configuration:security');
+        Cache::forget('administration:configuration-registry:v1');
+        Cache::forget('administration:feature-toggle:monitoring');
+        Cache::forget('administration:module-registry:v1');
+
+        parent::tearDown();
+    }
 
     public function test_administrator_can_access_system_administration_foundation_overview(): void
     {
@@ -24,6 +35,8 @@ final class AdministrationFoundationApiTest extends TestCase
             ->assertJsonPath('data.capabilities.0.key', 'configuration_registry')
             ->assertJsonPath('data.backup_restore.backup.production_operations_enabled', false)
             ->assertJsonPath('data.configuration_engine.single_source_of_truth', true)
+            ->assertJsonPath('data.engine_metrics.business_module_direct_access', false)
+            ->assertJsonPath('data.engine_metrics.performance.feature_cache', true)
             ->assertJsonPath('data.health.status', 'ready')
             ->assertJsonPath('meta.business_transaction_management_enabled', false);
     }
@@ -44,7 +57,9 @@ final class AdministrationFoundationApiTest extends TestCase
         }
 
         $this->putJson('/api/v1/admin/configurations/security', ['enabled' => false, 'values' => ['password_min_length' => 12]])->assertOk()->assertJsonPath('data.enabled', false);
+        $this->getJson('/api/v1/admin/configurations/security')->assertOk()->assertJsonPath('data.values.password_min_length', 12);
         $this->putJson('/api/v1/admin/features/monitoring', ['state' => 'hidden'])->assertOk()->assertJsonPath('data.state', 'hidden');
+        $this->getJson('/api/v1/admin/features')->assertOk()->assertJsonPath('data.6.state', 'hidden');
     }
 
     public function test_unauthenticated_user_cannot_access_administration_overview(): void

@@ -2,9 +2,7 @@
 
 namespace Modules\Administration\Exceptions;
 
-use RuntimeException;
-
-final class InvalidConfigurationException extends RuntimeException
+final class InvalidConfigurationException extends AdministrationException
 {
     public static function forCategory(string $category): self
     {
