@@ -14,6 +14,7 @@ use Modules\Administration\Engines\RestoreEngine;
 use Modules\Administration\Engines\SecurityEngine;
 use Modules\Administration\Services\ConfigurationCache;
 use Modules\Administration\Services\ConfigurationValidator;
+use Modules\Administration\Services\DisasterRecoveryService;
 use Modules\Administration\Services\FeatureToggleService;
 use Modules\Administration\Support\ConfigurationRegistry;
 use Modules\Administration\Support\EnvironmentResolver;
@@ -24,7 +25,7 @@ final class AdministrationServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        foreach ([ConfigurationRegistry::class, ConfigurationCache::class, ConfigurationValidator::class, ConfigurationEngine::class, FeatureToggleService::class, SecurityEngine::class, MonitoringEngine::class, AuditEngine::class, BackupEngine::class, RestoreEngine::class, IntegrationEngine::class, HealthCheckEngine::class, ModuleRegistry::class, SystemCapabilityRegistry::class, EnvironmentResolver::class, AdministrationEngine::class] as $service) {
+        foreach ([ConfigurationRegistry::class, ConfigurationCache::class, ConfigurationValidator::class, ConfigurationEngine::class, FeatureToggleService::class, SecurityEngine::class, MonitoringEngine::class, AuditEngine::class, BackupEngine::class, RestoreEngine::class, IntegrationEngine::class, HealthCheckEngine::class, DisasterRecoveryService::class, ModuleRegistry::class, SystemCapabilityRegistry::class, EnvironmentResolver::class, AdministrationEngine::class] as $service) {
             $this->app->singleton($service);
         }
     }

@@ -6,14 +6,17 @@ use Modules\Administration\Repositories\Contracts\AdministrationRepositoryInterf
 use Modules\Administration\Engines\AdministrationEngine;
 use Modules\Administration\Engines\ConfigurationEngine;
 use Modules\Administration\Engines\AuditEngine;
+use Modules\Administration\Engines\BackupEngine;
 use Modules\Administration\Engines\MonitoringEngine;
+use Modules\Administration\Engines\RestoreEngine;
+use Modules\Administration\Engines\SecurityEngine;
 use Modules\Administration\Jobs\CollectAdministrationMetricsJob;
 use Modules\Administration\Support\ConfigurationRegistry;
 use Modules\Administration\Services\FeatureToggleService;
 
 final class AdministrationService
 {
-    public function __construct(private readonly AdministrationRepositoryInterface $administration, private readonly ConfigurationRegistry $configurationRegistry, private readonly AdministrationEngine $engine, private readonly ConfigurationEngine $configuration, private readonly FeatureToggleService $features, private readonly MonitoringEngine $monitoringEngine, private readonly AuditEngine $auditEngine)
+    public function __construct(private readonly AdministrationRepositoryInterface $administration, private readonly ConfigurationRegistry $configurationRegistry, private readonly AdministrationEngine $engine, private readonly ConfigurationEngine $configuration, private readonly FeatureToggleService $features, private readonly MonitoringEngine $monitoringEngine, private readonly AuditEngine $auditEngine, private readonly SecurityEngine $securityEngine, private readonly BackupEngine $backupEngine, private readonly RestoreEngine $restoreEngine, private readonly DisasterRecoveryService $disasterRecovery)
     {
     }
 
@@ -122,6 +125,32 @@ final class AdministrationService
     }
 
     /** @return array<string, mixed> */
+    public function securityGovernance(): array
+    {
+        return ['data' => $this->securityEngine->governance(), 'message' => 'Security governance retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function securityHealth(): array
+    {
+        return ['data' => $this->securityEngine->health(), 'message' => 'Security health retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function securityIncidents(bool $statistics = false): array
+    {
+        $incidents = $this->securityEngine->incidents();
+
+        return ['data' => $statistics ? ['total' => count($incidents['items']), 'open' => count($incidents['items']), 'critical' => 0, 'lifecycle' => $incidents['lifecycle']] : $incidents, 'message' => 'Security incidents retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function securityAlerts(): array
+    {
+        return ['data' => $this->securityEngine->alerts(), 'message' => 'Security alerts retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
     public function monitoring(?string $check = null): array
     {
         $monitoring = $this->engine->overview()['monitoring'];
@@ -193,7 +222,67 @@ final class AdministrationService
     /** @return array<string, mixed> */
     public function backup(bool $history = false): array
     {
-        return ['data' => $history ? ['items' => [], 'production_history_enabled' => false] : $this->engine->overview()['backup'], 'message' => 'Backup metadata retrieved.'];
+        return ['data' => $history ? $this->backupEngine->history() : $this->engine->overview()['backup'], 'message' => 'Backup metadata retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function backupPolicy(): array
+    {
+        return ['data' => $this->backupEngine->policy(), 'message' => 'Backup policy retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function backupPlans(): array
+    {
+        return ['data' => $this->backupEngine->plans(), 'message' => 'Backup plans retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function backupExecution(): array
+    {
+        return ['data' => $this->backupEngine->execution(), 'message' => 'Backup execution foundation retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function backupVerification(): array
+    {
+        return ['data' => $this->backupEngine->verification(), 'message' => 'Backup verification metadata retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function restoreRequests(): array
+    {
+        return ['data' => $this->restoreEngine->requests(), 'message' => 'Restore requests retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function restoreValidation(): array
+    {
+        return ['data' => $this->restoreEngine->validation(), 'message' => 'Restore validation workflow retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function restoreDryRun(): array
+    {
+        return ['data' => $this->restoreEngine->dryRun(), 'message' => 'Restore dry-run metadata retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function disasterRecoveryPlan(): array
+    {
+        return ['data' => $this->disasterRecovery->plan(), 'message' => 'Disaster recovery plan retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function disasterRecoveryReadiness(): array
+    {
+        return ['data' => $this->disasterRecovery->readiness(), 'message' => 'Disaster recovery readiness retrieved.'];
+    }
+
+    /** @return array<string, mixed> */
+    public function recoveryChecklist(): array
+    {
+        return ['data' => $this->disasterRecovery->checklist(), 'message' => 'Recovery checklist retrieved.'];
     }
 
     /** @return array<string, mixed> */

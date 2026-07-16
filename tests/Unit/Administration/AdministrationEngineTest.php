@@ -6,12 +6,15 @@ use Illuminate\Support\Facades\Cache;
 use Modules\Administration\Engines\AdministrationEngine;
 use Modules\Administration\Engines\ConfigurationEngine;
 use Modules\Administration\Engines\AuditEngine;
+use Modules\Administration\Engines\BackupEngine;
 use Modules\Administration\Engines\HealthCheckEngine;
 use Modules\Administration\Engines\MonitoringEngine;
+use Modules\Administration\Engines\RestoreEngine;
 use Modules\Administration\Engines\SecurityEngine;
 use Modules\Administration\Exceptions\AdministrationException;
 use Modules\Administration\Exceptions\ConfigurationNotFoundException;
 use Modules\Administration\Services\FeatureToggleService;
+use Modules\Administration\Services\DisasterRecoveryService;
 use Modules\Administration\Services\ConfigurationValidator;
 use Modules\Administration\Support\FeatureToggle;
 use Modules\Administration\Support\ModuleRegistry;
@@ -90,11 +93,31 @@ final class AdministrationEngineTest extends TestCase
 
     public function test_security_engine_reports_cached_role_and_permission_evaluation(): void
     {
-        $metadata = app(SecurityEngine::class)->metadata();
+        $engine = app(SecurityEngine::class);
+        $metadata = $engine->metadata();
 
         $this->assertSame('user_scoped_cache', $metadata['role_resolution']);
         $this->assertSame('user_scoped_cache', $metadata['permission_evaluation']);
         $this->assertTrue($metadata['least_privilege']);
+        $this->assertFalse($engine->governance()['policy']['auto_remediation']);
+        $this->assertSame('detected', $engine->incidents()['items'][0]['status']);
+        $this->assertTrue($engine->alerts()['notification_event_engine']['uses_existing_engine']);
+    }
+
+    public function test_backup_restore_and_disaster_recovery_foundations_are_non_destructive(): void
+    {
+        $backup = app(BackupEngine::class);
+        $restore = app(RestoreEngine::class);
+        $dr = app(DisasterRecoveryService::class);
+
+        $this->assertFalse($backup->execution()['destructive_operation']);
+        $this->assertFalse($backup->execution()['full_production_backup_executed']);
+        $this->assertTrue($backup->verification()['integrity']['checksum_required']);
+        $this->assertFalse($restore->dryRun()['destructive_operation']);
+        $this->assertTrue($restore->requests()['requires_explicit_authorization']);
+        $this->assertSame(24, $dr->plan()['rpo']['value']);
+        $this->assertTrue($dr->readiness()['rule_based']);
+        $this->assertGreaterThan(0, count($dr->checklist()['items']));
     }
 
     public function test_monitoring_audit_and_health_governance_metadata_is_available(): void

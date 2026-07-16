@@ -27,6 +27,11 @@ final class AdministrationRoutes
             Route::get('health-score', [AdministrationController::class, 'healthScore']);
             Route::get('health/{check}', [AdministrationController::class, 'healthCheck'])->whereIn('check', ['database', 'cache', 'storage', 'queue']);
             Route::get('security', [AdministrationController::class, 'security']);
+            Route::get('security/governance', [AdministrationController::class, 'securityGovernance']);
+            Route::get('security/health', [AdministrationController::class, 'securityHealth']);
+            Route::get('security/incidents', [AdministrationController::class, 'securityIncidents']);
+            Route::get('security/incidents/statistics', [AdministrationController::class, 'incidentStatistics']);
+            Route::get('security/alerts', [AdministrationController::class, 'securityAlerts']);
             Route::get('security/{section}', [AdministrationController::class, 'securitySection'])->whereIn('section', ['permissions', 'roles']);
             Route::get('monitoring', [AdministrationController::class, 'monitoring']);
             Route::get('monitoring/summary', [AdministrationController::class, 'monitoringSummary']);
@@ -39,7 +44,17 @@ final class AdministrationRoutes
             Route::get('audit/statistics', [AdministrationController::class, 'auditStatistics']);
             Route::get('operational-dashboard', [AdministrationController::class, 'operationalDashboard']);
             Route::get('backup', [AdministrationController::class, 'backup']);
+            Route::get('backup/policy', [AdministrationController::class, 'backupPolicy']);
+            Route::get('backup/plans', [AdministrationController::class, 'backupPlans']);
             Route::get('backup/history', [AdministrationController::class, 'backupHistory']);
+            Route::get('backup/execution', [AdministrationController::class, 'backupExecution']);
+            Route::get('backup/verification', [AdministrationController::class, 'backupVerification']);
+            Route::get('restore/requests', [AdministrationController::class, 'restoreRequests']);
+            Route::get('restore/validation', [AdministrationController::class, 'restoreValidation']);
+            Route::post('restore/dry-run', [AdministrationController::class, 'restoreDryRun']);
+            Route::get('disaster-recovery/plan', [AdministrationController::class, 'disasterRecoveryPlan']);
+            Route::get('disaster-recovery/readiness', [AdministrationController::class, 'disasterRecoveryReadiness']);
+            Route::get('disaster-recovery/checklist', [AdministrationController::class, 'recoveryChecklist']);
             Route::get('integration', [AdministrationController::class, 'integration']);
         });
     }

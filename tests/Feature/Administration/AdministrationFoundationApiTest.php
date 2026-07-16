@@ -53,7 +53,7 @@ final class AdministrationFoundationApiTest extends TestCase
     {
         $this->authenticateAs('administrator');
 
-        foreach (['/configurations', '/configurations/security', '/modules', '/modules/monitoring', '/features', '/health', '/health-score', '/health/database', '/health/cache', '/health/storage', '/health/queue', '/security', '/security/permissions', '/security/roles', '/monitoring', '/monitoring/summary', '/monitoring/performance', '/monitoring/capacity', '/monitoring/alerts', '/monitoring/application', '/monitoring/cache', '/monitoring/database', '/monitoring/queue', '/monitoring/worker', '/monitoring/scheduler', '/monitoring/api', '/monitoring/integration', '/audit', '/audit/center', '/audit/statistics', '/operational-dashboard', '/backup', '/backup/history', '/integration'] as $endpoint) {
+        foreach (['/configurations', '/configurations/security', '/modules', '/modules/monitoring', '/features', '/health', '/health-score', '/health/database', '/health/cache', '/health/storage', '/health/queue', '/security', '/security/governance', '/security/health', '/security/incidents', '/security/incidents/statistics', '/security/alerts', '/security/permissions', '/security/roles', '/monitoring', '/monitoring/summary', '/monitoring/performance', '/monitoring/capacity', '/monitoring/alerts', '/monitoring/application', '/monitoring/cache', '/monitoring/database', '/monitoring/queue', '/monitoring/worker', '/monitoring/scheduler', '/monitoring/api', '/monitoring/integration', '/audit', '/audit/center', '/audit/statistics', '/operational-dashboard', '/backup', '/backup/policy', '/backup/plans', '/backup/history', '/backup/execution', '/backup/verification', '/restore/requests', '/restore/validation', '/disaster-recovery/plan', '/disaster-recovery/readiness', '/disaster-recovery/checklist', '/integration'] as $endpoint) {
             $this->getJson('/api/v1/admin'.$endpoint)->assertOk()->assertJsonPath('success', true);
         }
 
@@ -71,6 +71,13 @@ final class AdministrationFoundationApiTest extends TestCase
         $this->getJson('/api/v1/admin/monitoring/alerts')->assertOk()->assertJsonPath('data.notification_event_engine.uses_existing_engine', true);
         $this->getJson('/api/v1/admin/audit/center')->assertOk()->assertJsonPath('data.immutable', true);
         $this->getJson('/api/v1/admin/health-score')->assertOk()->assertJsonPath('data.scoring.rule_based', true);
+        $this->getJson('/api/v1/admin/security/governance')->assertOk()->assertJsonPath('data.policy.auto_remediation', false);
+        $this->getJson('/api/v1/admin/security/health')->assertOk()->assertJsonPath('data.rule_based', true);
+        $this->getJson('/api/v1/admin/backup/execution')->assertOk()->assertJsonPath('data.destructive_operation', false);
+        $this->getJson('/api/v1/admin/backup/verification')->assertOk()->assertJsonPath('data.encryption.plaintext_secret_allowed', false);
+        $this->getJson('/api/v1/admin/restore/requests')->assertOk()->assertJsonPath('data.requires_explicit_authorization', true);
+        $this->postJson('/api/v1/admin/restore/dry-run')->assertOk()->assertJsonPath('data.destructive_operation', false);
+        $this->getJson('/api/v1/admin/disaster-recovery/readiness')->assertOk()->assertJsonPath('data.rule_based', true);
     }
 
     public function test_unauthenticated_user_cannot_access_administration_overview(): void

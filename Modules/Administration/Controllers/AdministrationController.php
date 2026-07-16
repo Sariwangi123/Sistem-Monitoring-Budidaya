@@ -39,6 +39,11 @@ final class AdministrationController
     public function healthCheck(string $check): JsonResource { return $this->response('health', $check); }
     public function security(): JsonResource { return $this->response('security'); }
     public function securitySection(string $section): JsonResource { return $this->response('security', $section); }
+    public function securityGovernance(): JsonResource { return $this->response('securityGovernance'); }
+    public function securityHealth(): JsonResource { return $this->response('securityHealth'); }
+    public function securityIncidents(): JsonResource { return $this->response('securityIncidents'); }
+    public function incidentStatistics(): JsonResource { return $this->response('securityIncidents', true); }
+    public function securityAlerts(): JsonResource { return $this->response('securityAlerts'); }
     public function monitoring(): JsonResource { return $this->response('monitoring'); }
     public function monitoringCheck(string $check): JsonResource { return $this->response('monitoring', $check); }
     public function monitoringSummary(): JsonResource { return $this->response('monitoringSummary'); }
@@ -52,6 +57,16 @@ final class AdministrationController
     public function operationalDashboard(): JsonResource { return $this->response('operationalDashboard'); }
     public function backup(): JsonResource { return $this->response('backup'); }
     public function backupHistory(): JsonResource { return $this->response('backup', true); }
+    public function backupPolicy(): JsonResource { return $this->response('backupPolicy'); }
+    public function backupPlans(): JsonResource { return $this->response('backupPlans'); }
+    public function backupExecution(): JsonResource { return $this->response('backupExecution'); }
+    public function backupVerification(): JsonResource { return $this->response('backupVerification'); }
+    public function restoreRequests(): JsonResource { return $this->response('restoreRequests'); }
+    public function restoreValidation(): JsonResource { return $this->response('restoreValidation'); }
+    public function restoreDryRun(): JsonResource { return $this->response('restoreDryRun'); }
+    public function disasterRecoveryPlan(): JsonResource { return $this->response('disasterRecoveryPlan'); }
+    public function disasterRecoveryReadiness(): JsonResource { return $this->response('disasterRecoveryReadiness'); }
+    public function recoveryChecklist(): JsonResource { return $this->response('recoveryChecklist'); }
     public function integration(): JsonResource { return $this->response('integration'); }
 
     private function response(string $method, mixed ...$arguments): JsonResource
