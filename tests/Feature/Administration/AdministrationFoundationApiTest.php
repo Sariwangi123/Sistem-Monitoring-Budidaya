@@ -22,7 +22,9 @@ final class AdministrationFoundationApiTest extends TestCase
             ->assertJsonPath('data.module.read_only_business_module', true)
             ->assertJsonPath('data.configuration_categories.0.key', 'general')
             ->assertJsonPath('data.capabilities.0.key', 'configuration_registry')
-            ->assertJsonPath('data.backup_restore.production_operations_enabled', false)
+            ->assertJsonPath('data.backup_restore.backup.production_operations_enabled', false)
+            ->assertJsonPath('data.configuration_engine.single_source_of_truth', true)
+            ->assertJsonPath('data.health.status', 'ready')
             ->assertJsonPath('meta.business_transaction_management_enabled', false);
     }
 

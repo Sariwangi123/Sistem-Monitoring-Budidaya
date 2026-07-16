@@ -7,7 +7,6 @@ use Illuminate\Support\ServiceProvider;
 use Modules\Administration\Policies\AdministrationPolicy;
 use Modules\Administration\Repositories\AdministrationRepository;
 use Modules\Administration\Repositories\Contracts\AdministrationRepositoryInterface;
-use Modules\Administration\Support\ConfigurationRegistry;
 use MasterData\Models\City;
 use MasterData\Models\Company;
 use MasterData\Models\Customer;
@@ -131,7 +130,6 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(AdministrationRepositoryInterface::class, AdministrationRepository::class);
-        $this->app->singleton(ConfigurationRegistry::class);
         $this->app->singleton(WidgetRegistry::class);
         $this->app->bind(DashboardRepositoryInterface::class, DashboardRepository::class);
         $this->app->bind(HarvestRepositoryInterface::class, HarvestRepository::class);

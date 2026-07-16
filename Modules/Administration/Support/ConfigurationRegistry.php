@@ -4,6 +4,10 @@ namespace Modules\Administration\Support;
 
 final class ConfigurationRegistry
 {
+    public function hasCategory(string $category): bool
+    {
+        return in_array($category, array_column($this->categories(), 'key'), true);
+    }
     /** @return array<int, array<string, string>> */
     public function categories(): array
     {
