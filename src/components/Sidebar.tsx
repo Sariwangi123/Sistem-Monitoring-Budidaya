@@ -8,6 +8,7 @@ const items = [
   { label: 'Roles', icon: Shield },
   { label: 'Settings', icon: Settings },
   { label: 'Notifications', icon: Bell, page: 'notifications' as AppPage },
+  { label: 'Administration', icon: Settings, page: 'administration' as AppPage },
   { label: 'Master Data', icon: Database },
 ];
 
