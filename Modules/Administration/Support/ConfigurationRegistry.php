@@ -24,7 +24,7 @@ final class ConfigurationRegistry
     public function capabilities(): array
     {
         return [
-            ['key' => 'configuration_registry', 'available' => true, 'mode' => 'metadata_foundation', 'single_source_of_truth' => true, 'versioning_enabled' => false],
+            ['key' => 'configuration_registry', 'available' => true, 'mode' => 'governance_foundation', 'single_source_of_truth' => true, 'versioning_enabled' => true],
             ['key' => 'rbac', 'available' => true, 'mode' => 'existing_platform_service'],
             ['key' => 'audit_management', 'available' => true, 'mode' => 'read_only_foundation', 'deletion_allowed' => false],
             ['key' => 'monitoring', 'available' => true, 'mode' => 'read_only_foundation'],

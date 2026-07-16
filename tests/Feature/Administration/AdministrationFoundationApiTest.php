@@ -17,6 +17,7 @@ final class AdministrationFoundationApiTest extends TestCase
     protected function tearDown(): void
     {
         Cache::forget('administration:configuration:security');
+        Cache::forget('administration:configuration-history:security');
         Cache::forget('administration:configuration-registry:v1');
         Cache::forget('administration:feature-toggle:monitoring');
         Cache::forget('administration:module-registry:v1');
@@ -37,7 +38,7 @@ final class AdministrationFoundationApiTest extends TestCase
             ->assertJsonPath('data.configuration_engine.single_source_of_truth', true)
             ->assertJsonPath('data.engine_metrics.business_module_direct_access', false)
             ->assertJsonPath('data.engine_metrics.performance.feature_cache', true)
-            ->assertJsonPath('data.health.status', 'ready')
+            ->assertJsonPath('data.health.status', 'healthy')
             ->assertJsonPath('meta.business_transaction_management_enabled', false);
     }
 
@@ -52,14 +53,24 @@ final class AdministrationFoundationApiTest extends TestCase
     {
         $this->authenticateAs('administrator');
 
-        foreach (['/configurations', '/configurations/security', '/modules', '/modules/monitoring', '/features', '/health', '/health/database', '/health/cache', '/health/storage', '/health/queue', '/security', '/security/permissions', '/security/roles', '/monitoring', '/monitoring/application', '/monitoring/cache', '/monitoring/database', '/monitoring/queue', '/audit', '/audit/statistics', '/backup', '/backup/history', '/integration'] as $endpoint) {
+        foreach (['/configurations', '/configurations/security', '/modules', '/modules/monitoring', '/features', '/health', '/health-score', '/health/database', '/health/cache', '/health/storage', '/health/queue', '/security', '/security/permissions', '/security/roles', '/monitoring', '/monitoring/summary', '/monitoring/performance', '/monitoring/capacity', '/monitoring/alerts', '/monitoring/application', '/monitoring/cache', '/monitoring/database', '/monitoring/queue', '/monitoring/worker', '/monitoring/scheduler', '/monitoring/api', '/monitoring/integration', '/audit', '/audit/center', '/audit/statistics', '/operational-dashboard', '/backup', '/backup/history', '/integration'] as $endpoint) {
             $this->getJson('/api/v1/admin'.$endpoint)->assertOk()->assertJsonPath('success', true);
         }
 
-        $this->putJson('/api/v1/admin/configurations/security', ['enabled' => false, 'values' => ['password_min_length' => 12]])->assertOk()->assertJsonPath('data.enabled', false);
+        $this->putJson('/api/v1/admin/configurations/security', ['enabled' => false, 'values' => ['password_min_length' => 12, 'api_secret' => 'plain-secret'], 'reason' => 'Part 6 test', 'change_summary' => 'Security configuration governance update'])->assertOk()->assertJsonPath('data.enabled', false);
         $this->getJson('/api/v1/admin/configurations/security')->assertOk()->assertJsonPath('data.values.password_min_length', 12);
+        $this->getJson('/api/v1/admin/configurations/security/versions')->assertOk()->assertJsonPath('data.0.version', 1);
+        $this->getJson('/api/v1/admin/configurations/security/history')->assertOk()->assertJsonPath('data.0.immutable', true)->assertJsonPath('data.0.new_value.values.api_secret', '********');
+        $this->getJson('/api/v1/admin/configurations/security/publish')->assertOk()->assertJsonPath('data.status', 'ready');
+        $this->getJson('/api/v1/admin/configurations/security/rollback')->assertOk()->assertJsonPath('data.available', true);
+        $this->postJson('/api/v1/admin/configurations/security/refresh-cache')->assertOk()->assertJsonPath('data.refreshed', true);
         $this->putJson('/api/v1/admin/features/monitoring', ['state' => 'hidden'])->assertOk()->assertJsonPath('data.state', 'hidden');
         $this->getJson('/api/v1/admin/features')->assertOk()->assertJsonPath('data.6.state', 'hidden');
+        $this->getJson('/api/v1/admin/monitoring/performance')->assertOk()->assertJsonPath('data.external_apm_enabled', false);
+        $this->getJson('/api/v1/admin/monitoring/capacity')->assertOk()->assertJsonPath('data.planning_mode', 'rule_based_metadata');
+        $this->getJson('/api/v1/admin/monitoring/alerts')->assertOk()->assertJsonPath('data.notification_event_engine.uses_existing_engine', true);
+        $this->getJson('/api/v1/admin/audit/center')->assertOk()->assertJsonPath('data.immutable', true);
+        $this->getJson('/api/v1/admin/health-score')->assertOk()->assertJsonPath('data.scoring.rule_based', true);
     }
 
     public function test_unauthenticated_user_cannot_access_administration_overview(): void
