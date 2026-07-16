@@ -14,7 +14,7 @@ export function AppLayout({ children, currentPage, onNavigate }: AppLayoutProps)
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
       <div className="min-h-screen lg:pl-64">
-        <Navbar />
+        <Navbar currentPage={currentPage} onNavigate={onNavigate} />
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>

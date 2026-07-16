@@ -7,7 +7,7 @@ const items = [
   { label: 'Users', icon: Users },
   { label: 'Roles', icon: Shield },
   { label: 'Settings', icon: Settings },
-  { label: 'Notifications', icon: Bell },
+  { label: 'Notifications', icon: Bell, page: 'notifications' as AppPage },
   { label: 'Master Data', icon: Database },
 ];
 

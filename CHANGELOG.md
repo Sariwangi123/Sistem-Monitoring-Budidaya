@@ -64,6 +64,7 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
 - Added Notification Part 1 backend foundation with Notification Center overview endpoint, repository contract and implementation, service foundation, controller, API resource, policy, route, category/priority/status/channel definitions, MVP In-App channel metadata, service container binding, and feature tests.
 - Added Notification Part 2 event-driven architecture foundation with immutable Domain Event contract and implementation, sample events, Event Bus abstraction, Notification Registry, Notification Definition metadata, Recipient Resolver, Channel Resolver, In-App channel adapter, Delivery Engine, queue/job foundation, Retry Policy, delivery status workflow, notification record/history foundation, template abstraction, service container bindings, custom exceptions, and unit/feature tests.
 - Added Notification Part 3 REST API layer with Notification Center list, detail, read/read-all, archive/archive-all, delete, preferences, history, search, statistics, retry, registry, templates, export metadata endpoints, Form Request validation, API Resources, user-scoped repository queries, status transition validation, RBAC policies, action logging, preference storage, and feature tests.
+- Added Notification Part 4 frontend Notification Center with lazy-loaded hash route, sidebar and navbar unread badge integration, user-scoped three-panel workspace, navigation, search, filters, sorting, pagination, statistics, detail actions, history, preferences, responsive states, and React Query service-backed mutations.
 
 ## Fixed
 
@@ -250,6 +251,13 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
   - ✅ `docker compose exec app php artisan migrate` — no pending migrations.
   - ✅ `docker compose exec app php artisan test` — 78 passed, 638 assertions.
   - ✅ Notification Part 3 REST API completed; Notification remains in progress for Part 4.
+- Ran Notification Part 4 frontend verification (2026-07-16):
+  - ✅ `npm run build` — TypeScript and Vite production build passed; Notification Center is emitted as a lazy-loaded chunk.
+  - ✅ `npm run lint` — ESLint passed with no errors.
+  - ✅ `php artisan route:list --path=api/v1/notifications` — 17 Notification routes registered locally.
+  - ⚠️ `docker compose exec app php artisan route:list --path=api/v1/notifications` and Docker test verification could not run because Docker Desktop daemon was unavailable.
+  - ⚠️ Local `php artisan test` exceeded 180 seconds while unrelated Finance and Harvest service tests failed; the prior Docker-backed Notification Part 3 suite passed with 78 tests and 638 assertions.
+  - ✅ Notification Part 4 frontend completed and is ready for review and manual Git commit; Notification remains in progress for Part 5.
 
 ## Planned
 
