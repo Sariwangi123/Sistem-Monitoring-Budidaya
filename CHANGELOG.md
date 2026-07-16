@@ -252,11 +252,14 @@ Seluruh perubahan arsitektur, fitur, dokumentasi, dan implementasi wajib dicatat
   - ✅ `docker compose exec app php artisan test` — 78 passed, 638 assertions.
   - ✅ Notification Part 3 REST API completed; Notification remains in progress for Part 4.
 - Ran Notification Part 4 frontend verification (2026-07-16):
+  - ✅ `docker compose up -d` — PostgreSQL, Redis, app, and Nginx containers started.
+  - ✅ `docker compose exec app composer dump-autoload` — 6737 classes, optimized autoload regenerated.
+  - ✅ `docker compose exec app php artisan route:list --path=api/v1/notifications` — 17 Notification routes registered.
+  - ✅ `docker compose exec app php artisan test` — 78 passed, 638 assertions, 93.17 seconds.
+  - ✅ `docker compose exec app php artisan about` — Laravel 12.63.0, PHP 8.4.23, PostgreSQL, Redis cache, database queue, Asia/Jakarta.
+  - ✅ `docker compose exec app php artisan migrate:status` — 66 migrations Ran.
   - ✅ `npm run build` — TypeScript and Vite production build passed; Notification Center is emitted as a lazy-loaded chunk.
   - ✅ `npm run lint` — ESLint passed with no errors.
-  - ✅ `php artisan route:list --path=api/v1/notifications` — 17 Notification routes registered locally.
-  - ⚠️ `docker compose exec app php artisan route:list --path=api/v1/notifications` and Docker test verification could not run because Docker Desktop daemon was unavailable.
-  - ⚠️ Local `php artisan test` exceeded 180 seconds while unrelated Finance and Harvest service tests failed; the prior Docker-backed Notification Part 3 suite passed with 78 tests and 638 assertions.
   - ✅ Notification Part 4 frontend completed and is ready for review and manual Git commit; Notification remains in progress for Part 5.
 
 ## Planned

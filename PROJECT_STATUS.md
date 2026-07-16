@@ -158,7 +158,6 @@ Status
 - [x] Part 1 - Dashboard Foundation
 - [x] Part 2 - Dashboard Architecture & Widget Engine
 - [x] Part 3 - REST API Specification
-- [x] Part 4 - Frontend Notification Center
 - [x] Part 4 - Frontend & UI Workspace
 - [x] Part 5 - Dashboard Engine & Business Rules
 - [x] Part 6 - Operational Intelligence
@@ -182,6 +181,8 @@ Status
 - [x] Part 1 - Overview, Business Process, and Foundation
 - [x] Part 2 - Notification Architecture & Event Engine
 - [x] Part 3 - REST API Specification
+- [x] Part 4 - Frontend Notification Center
+- [ ] Part 5 - Notification Engine & Business Rules
 
 ---
 
@@ -504,12 +505,15 @@ Verifikasi Notification Part 3 (2026-07-15):
 - Notification Part 3 selesai: REST API Notification Center untuk list, detail, mark as read, read all, archive, archive all, delete, preferences, history, search, statistics, retry failed notification, registry, templates, dan export metadata; Form Request, API Resource, thin controller, service orchestration, repository query, RBAC policy, user scope, logging, dan feature tests siap review.
 
 Verifikasi Notification Part 4 (2026-07-16):
+- ✅ `docker compose up -d` — container PostgreSQL, Redis, app, dan Nginx aktif.
+- ✅ `docker compose exec app composer dump-autoload` — 6737 classes, optimized autoload regenerated.
+- ✅ `docker compose exec app php artisan route:list --path=api/v1/notifications` — 17 Notification routes terdaftar.
+- ✅ `docker compose exec app php artisan test` — 78 test passed, 638 assertions, durasi 93.17 detik.
+- ✅ `docker compose exec app php artisan about` — Laravel 12.63.0, PHP 8.4.23, PostgreSQL, Redis cache, database queue, Asia/Jakarta.
+- ✅ `docker compose exec app php artisan migrate:status` — 66 migrations berstatus Ran.
 - ✅ `npm run build` — TypeScript dan Vite production build berhasil; Notification Center dimuat secara lazy-loaded.
 - ✅ `npm run lint` — ESLint berhasil tanpa error.
-- ✅ `php artisan route:list --path=api/v1/notifications` — 17 Notification routes terdaftar secara lokal.
-- ⚠️ Verifikasi `docker compose exec app` tidak dapat dijalankan karena Docker Desktop daemon tidak aktif.
-- ⚠️ Local `php artisan test` melewati batas 180 detik dengan kegagalan pada Finance dan Harvest service test yang tidak terkait; hasil Docker terakhir Notification Part 3: 78 test, 638 assertions berhasil.
-- Notification Part 4 selesai: route frontend, sidebar, navbar unread badge, Notification Center tiga panel responsif, navigation, search, filter, sorting, pagination, statistics, detail/action panel, history, preference, loading/error/empty/skeleton state, dan React Query service-backed mutation siap review.
+- Notification Part 4 selesai dan siap untuk review serta manual Git commit. Notification tetap 🔄 In Progress dengan Next Task: Notification Part 5.
 
 ---
 
