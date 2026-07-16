@@ -1,0 +1,19 @@
+<?php
+
+namespace Modules\Administration\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+final class AdministrationApiResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return $this->resource['data'] ?? [];
+    }
+
+    public function with(Request $request): array
+    {
+        return ['success' => true, 'message' => $this->resource['message'] ?? 'Success', 'meta' => $this->resource['meta'] ?? []];
+    }
+}

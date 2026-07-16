@@ -9,4 +9,7 @@ interface AdministrationRepositoryInterface
 
     /** @return array<int, array<string, string>> */
     public function supportedRoles(): array;
+
+    /** @return array<int, array<string, string>> */
+    public function permissions(): array;
 }

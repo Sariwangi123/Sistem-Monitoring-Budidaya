@@ -27,4 +27,11 @@ final class AdministrationRepository implements AdministrationRepositoryInterfac
             ->map(fn (Role $role): array => ['name' => $role->name, 'slug' => $role->slug])
             ->all();
     }
+
+    public function permissions(): array
+    {
+        return Permission::query()->orderBy('name')->get(['name', 'slug'])
+            ->map(fn (Permission $permission): array => ['name' => $permission->name, 'slug' => $permission->slug])
+            ->all();
+    }
 }

@@ -35,6 +35,18 @@ final class AdministrationFoundationApiTest extends TestCase
         $this->getJson('/api/v1/admin/overview')->assertForbidden();
     }
 
+    public function test_administrator_can_access_administration_rest_api_and_update_platform_metadata(): void
+    {
+        $this->authenticateAs('administrator');
+
+        foreach (['/configurations', '/configurations/security', '/modules', '/modules/monitoring', '/features', '/health', '/health/database', '/health/cache', '/health/storage', '/health/queue', '/security', '/security/permissions', '/security/roles', '/monitoring', '/monitoring/application', '/monitoring/cache', '/monitoring/database', '/monitoring/queue', '/audit', '/audit/statistics', '/backup', '/backup/history', '/integration'] as $endpoint) {
+            $this->getJson('/api/v1/admin'.$endpoint)->assertOk()->assertJsonPath('success', true);
+        }
+
+        $this->putJson('/api/v1/admin/configurations/security', ['enabled' => false, 'values' => ['password_min_length' => 12]])->assertOk()->assertJsonPath('data.enabled', false);
+        $this->putJson('/api/v1/admin/features/monitoring', ['state' => 'hidden'])->assertOk()->assertJsonPath('data.state', 'hidden');
+    }
+
     public function test_unauthenticated_user_cannot_access_administration_overview(): void
     {
         $this->getJson('/api/v1/admin/overview')->assertUnauthorized();
