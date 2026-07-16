@@ -6,6 +6,7 @@ use Dashboard\Routes\DashboardRoutes;
 use Finance\Routes\FinanceRoutes;
 use Harvest\Routes\HarvestRoutes;
 use Illuminate\Support\Facades\Route;
+use Modules\Administration\Routes\AdministrationRoutes;
 use MasterData\Routes\MasterDataRoutes;
 use Modules\Auth\Routes\AuthRoutes;
 use Modules\Notifications\Routes\NotificationRoutes;
@@ -29,5 +30,6 @@ Route::prefix('v1')->group(function (): void {
         UserRoutes::register();
         SettingRoutes::register();
         NotificationRoutes::register();
+        AdministrationRoutes::register();
     });
 });
